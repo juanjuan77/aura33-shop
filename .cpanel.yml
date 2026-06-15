@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan config:cache
-    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan route:cache
-    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan view:cache
+    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan config:clear
+    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan route:clear
+    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan view:clear
