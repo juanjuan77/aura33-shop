@@ -1,9 +1,6 @@
 ---
 deployment:
   tasks:
-    - cd /home/aura33/repositories/aura33 && composer install --no-dev --optimize-autoloader
-    - cd /home/aura33/repositories/aura33 && php artisan migrate --force
-    - cd /home/aura33/repositories/aura33 && php artisan config:cache
-    - cd /home/aura33/repositories/aura33 && php artisan route:cache
-    - cd /home/aura33/repositories/aura33 && php artisan view:cache
-    - cd /home/aura33/repositories/aura33 && php artisan storage:link
+    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan config:cache
+    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan route:cache
+    - /usr/local/bin/php /home/aura33/repositories/aura33/artisan view:cache
