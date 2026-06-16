@@ -3,3 +3,8 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/aura33/public_html/
     - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R $DEPLOYPATH/public/. $DEPLOYPATH
+    - /bin/rm -rf $DEPLOYPATH/public
+    - /bin/sed -i "s#__DIR__.'/../storage/framework/maintenance.php'#__DIR__.'/storage/framework/maintenance.php'#" $DEPLOYPATH/index.php
+    - /bin/sed -i "s#__DIR__.'/../vendor/autoload.php'#__DIR__.'/vendor/autoload.php'#" $DEPLOYPATH/index.php
+    - /bin/sed -i "s#__DIR__.'/../bootstrap/app.php'#__DIR__.'/bootstrap/app.php'#" $DEPLOYPATH/index.php

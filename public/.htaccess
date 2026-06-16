@@ -1,3 +1,11 @@
+# Block direct web access to app source folders deployed alongside this file
+RewriteEngine On
+RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
+RewriteRule ^\.env$ - [F,L]
+RewriteRule ^\.cpanel\.yml$ - [F,L]
+RewriteRule ^artisan$ - [F,L]
+RewriteRule ^composer\.(json|lock)$ - [F,L]
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
