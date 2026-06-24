@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const discount     = couponPercent > 0 ? Math.round(subtotalBase * couponPercent / 100) : 0;
         const afterDiscount = base - discount;
         const isMp         = getPaymentMethod() === 'mercadopago';
-        const surcharge    = isMp ? Math.round(afterDiscount * 0.05) : 0;
+        const surcharge    = isMp ? Math.round((subtotalBase - discount) * 0.05) : 0;
         const total        = afterDiscount + surcharge;
 
         // Fila descuento
