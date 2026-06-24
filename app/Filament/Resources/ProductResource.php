@@ -9,7 +9,9 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -213,6 +215,30 @@ class ProductResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    BulkAction::make('aumentar_precio')
+                        ->label('Aumentar precio')
+                        ->icon('heroicon-o-arrow-trending-up')
+                        ->form([
+                            Forms\Components\TextInput::make('monto_minorista')
+                                ->label('Sumar al precio minorista ($)')
+                                ->numeric()
+                                ->default(0)
+                                ->required(),
+                            Forms\Components\TextInput::make('monto_mayorista')
+                                ->label('Sumar al precio mayorista ($)')
+                                ->numeric()
+                                ->default(0)
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            $records->each(function (Product $record) use ($data) {
+                                $record->update([
+                                    'price_retail'    => $record->price_retail + (float) $data['monto_minorista'],
+                                    'price_wholesale' => $record->price_wholesale + (float) $data['monto_mayorista'],
+                                ]);
+                            });
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ])
             ->defaultSort('sort_order')
