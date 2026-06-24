@@ -163,8 +163,10 @@ class CartController extends Controller
         session()->forget('cart');
         if ($coupon) $coupon->recordUse($request->customer_email);
 
-        // Notificar al admin
-        $this->notifyAdmin(new NewOrderNotification($order->load('items')));
+        // Notificar al admin solo si el pago no depende de confirmación externa
+        if ($request->payment_method !== 'mercadopago') {
+            $this->notifyAdmin(new NewOrderNotification($order->load('items')));
+        }
 
         if ($isWholesale) {
             return redirect()->route('order.thanks', $order)->with('success', '¡Solicitud mayorista recibida! Te contactamos a la brevedad. 📦');
@@ -212,6 +214,7 @@ class CartController extends Controller
                 'mp_payment_id' => $request->payment_id,
                 'status'        => 'confirmed',
             ]);
+            $this->notifyAdmin(new NewOrderNotification($order->load('items')));
         }
         return redirect()->route('order.thanks', $order)->with('success', '¡Pago confirmado! 🎉');
     }

@@ -190,7 +190,8 @@ class OrderResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->defaultSort('created_at', 'desc')
+            ->modifyQueryUsing(fn ($query) => $query->where('status', '!=', 'cancelled'));
     }
 
     public static function getRelations(): array

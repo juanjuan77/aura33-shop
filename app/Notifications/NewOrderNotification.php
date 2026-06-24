@@ -40,6 +40,6 @@ class NewOrderNotification extends Notification
             ->line("**Envío:** $" . number_format($order->shipping_cost, 0, ',', '.'))
             ->line("**TOTAL: $" . number_format($order->total, 0, ',', '.') . "**")
             ->line("**Pago:** {$pago}")
-            ->action('Ver pedido en el admin', url("/admin/orders/{$order->id}/edit"));
+            ->action('Ver pedido en el admin', url("/a33mgr/orders/{$order->id}/edit"));
     }
 }
