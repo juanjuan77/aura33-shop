@@ -91,8 +91,16 @@
                     placeholder="¿Cómo conociste AURA33? ¿Qué cristales te interesan más? ¿Dónde y cómo vendés? Cualquier información que quieras compartir es bienvenida.">{{ old('notes') }}</textarea>
             </div>
 
-            <div style="background: rgba(74,59,82,0.04); border:1px solid rgba(74,59,82,0.1); border-radius:10px; padding:18px 22px; margin-bottom:28px; font-size:0.82rem; color:var(--muted); line-height:1.7;">
-                ✦ Al enviar esta solicitud entendés que AURA33 la revisará manualmente. La aprobación no es automática y nos reservamos el derecho de aceptar o no cada solicitud.
+            <div style="background: rgba(74,59,82,0.04); border:1px solid rgba(74,59,82,0.12); border-radius:12px; padding:22px 26px; margin-bottom:28px; line-height:1.8;">
+                <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--brand); margin-bottom:12px;">✦ Condiciones del programa mayorista</p>
+                <ul style="list-style:none; font-size:0.86rem; color:var(--text); display:flex; flex-direction:column; gap:8px;">
+                    <li style="display:flex; gap:10px;"><span style="color:var(--brand); font-size:1rem;">💎</span><span><strong>Mínimo 10 unidades</strong> por pedido al <strong>precio mayorista</strong>. La variedad de piedras es a elección de AURA33.</span></li>
+                    <li style="display:flex; gap:10px;"><span style="color:var(--brand); font-size:1rem;">✨</span><span><strong>Más de 20 unidades</strong> — <strong>5% adicional de descuento</strong>. El cliente elige las piedras con un máximo de 3 repeticiones por variedad.</span></li>
+                    <li style="display:flex; gap:10px;"><span style="color:var(--brand); font-size:1rem;">🚚</span><span>Envíos coordinados y atención directa para mayoristas.</span></li>
+                </ul>
+                <p style="font-size:0.78rem; color:var(--muted); margin-top:14px; border-top:1px solid rgba(74,59,82,0.08); padding-top:12px;">
+                    Al enviar esta solicitud entendés que AURA33 la revisará manualmente. La aprobación no es automática y nos reservamos el derecho de aceptar o no cada solicitud.
+                </p>
             </div>
 
             <button type="submit" class="btn" style="width:100%; padding:16px; font-size:0.95rem;">

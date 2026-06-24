@@ -311,9 +311,12 @@ class CartController extends Controller
 
     private function calculateTotals($items, array $cart, string $type = 'retail', string $province = ''): array
     {
+        $totalQty   = array_sum(array_intersect_key($cart, $items->keyBy('id')->toArray()));
+        $wsDiscount = ($type === 'wholesale' && $totalQty >= 20) ? 0.95 : 1.0;
+
         $subtotal = 0;
         foreach ($items as $item) {
-            $price     = $type === 'wholesale' ? $item->price_wholesale : $item->price_retail;
+            $price     = $type === 'wholesale' ? round($item->price_wholesale * $wsDiscount) : $item->price_retail;
             $subtotal += $price * ($cart[$item->id] ?? 0);
         }
 
