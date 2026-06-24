@@ -118,7 +118,7 @@ class CartController extends Controller
         $surcharge = 0;
         $total     = $totals['total'] - $discountAmount;
         if ($request->payment_method === 'mercadopago') {
-            $surcharge = round($total * 0.05, 2);
+            $surcharge = round(($totals['subtotal'] - $discountAmount) * 0.05, 2);
             $total     = $total + $surcharge;
         }
 
