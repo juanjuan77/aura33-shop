@@ -47,8 +47,11 @@
                 @endif
 
                 <div class="price-box" style="margin: 28px 0 8px;">
-                    <span class="price-retail" style="font-size:1.6rem;">${{ number_format($product->price_retail, 0, ',', '.') }}</span>
-                    <span class="price-wholesale">May. <strong>${{ number_format($product->price_wholesale, 0, ',', '.') }}</strong></span>
+                    @php $isWholesale = session('wholesale_user') !== null; @endphp
+                    <span class="price-retail" style="font-size:1.6rem;">${{ number_format($isWholesale ? $product->price_wholesale : $product->price_retail, 0, ',', '.') }}</span>
+                    @if($isWholesale)
+                        <span class="price-wholesale">Precio mayorista</span>
+                    @endif
                 </div>
 
                 @if($product->isInStock())

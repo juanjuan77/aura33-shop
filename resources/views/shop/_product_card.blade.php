@@ -20,7 +20,6 @@
                 <span class="price-wholesale">Precio mayorista</span>
             @else
                 <span class="price-retail">${{ number_format($product->price_retail, 0, ',', '.') }}</span>
-                <span class="price-wholesale">May. <strong>${{ number_format($product->price_wholesale, 0, ',', '.') }}</strong></span>
             @endif
         </div>
     </div>
