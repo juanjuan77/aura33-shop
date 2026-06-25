@@ -94,6 +94,7 @@ class ProductResource extends Resource
                         ->label('Subir nueva imagen principal')
                         ->helperText('Si subís una nueva imagen reemplaza la actual.')
                         ->image()
+                        ->disk('public')
                         ->directory('products')
                         ->imagePreviewHeight('200'),
 
@@ -101,6 +102,7 @@ class ProductResource extends Resource
                         ->label('Galería de imágenes')
                         ->image()
                         ->multiple()
+                        ->disk('public')
                         ->directory('products/gallery')
                         ->reorderable(),
                 ]),
