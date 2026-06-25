@@ -97,6 +97,10 @@ class ProductResource extends Resource
                         ->disk('public')
                         ->directory('products')
                         ->imagePreviewHeight('200')
+                        ->imageResizeMode('cover')
+                        ->imageResizeTargetWidth('800')
+                        ->imageResizeTargetHeight('800')
+                        ->imageResizeUpscale(false)
                         ->dehydrated(fn ($state) => filled($state)),
 
                     Forms\Components\FileUpload::make('images')
