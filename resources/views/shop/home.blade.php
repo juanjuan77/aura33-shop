@@ -935,32 +935,30 @@ if (!$lunarProduct) {
 /* ── Luna ─────────────────────────────────────────── */
 .lunar-section {
     position: relative;
-    background: linear-gradient(160deg, #120c1a 0%, #1e1228 50%, #0e0a15 100%);
+    background: linear-gradient(160deg, #f5f0f8 0%, #faf7fc 50%, #f0edf6 100%);
     padding: 90px 0;
     overflow: hidden;
+    border-top: 1px solid rgba(74,59,82,0.06);
+    border-bottom: 1px solid rgba(74,59,82,0.06);
 }
 
 .lunar-stars {
     position: absolute;
     inset: 0;
     background-image:
-        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 25% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 40% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
-        radial-gradient(1px 1px at 70% 10%, rgba(255,255,255,0.55) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 80% 50%, rgba(255,255,255,0.45) 0%, transparent 100%),
-        radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.35) 0%, transparent 100%),
-        radial-gradient(1px 1px at 35% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1.5px 1.5px at 50% 5%, rgba(255,255,255,0.5) 0%, transparent 100%);
+        radial-gradient(1px 1px at 10% 15%, rgba(180,160,200,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 60%, rgba(180,160,200,0.25) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 40% 25%, rgba(180,160,200,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 10%, rgba(180,160,200,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 75%, rgba(180,160,200,0.25) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 5%, rgba(180,160,200,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 45%, rgba(212,175,55,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(212,175,55,0.12) 0%, transparent 100%);
     pointer-events: none;
     animation: twinkle 6s ease-in-out infinite alternate;
 }
 @keyframes twinkle {
-    from { opacity: 0.7; }
+    from { opacity: 0.6; }
     to   { opacity: 1; }
 }
 
@@ -1017,7 +1015,7 @@ if (!$lunarProduct) {
 .lunar-phase-name {
     font-family: var(--font-serif);
     font-size: clamp(1.8rem, 3vw, 2.6rem);
-    color: #fff;
+    color: var(--brand);
     font-weight: 400;
     margin-bottom: 6px;
     line-height: 1.2;
@@ -1033,7 +1031,7 @@ if (!$lunarProduct) {
 }
 
 .lunar-desc {
-    color: rgba(255,255,255,0.7);
+    color: var(--muted);
     font-size: 0.92rem;
     font-weight: 300;
     line-height: 1.8;
@@ -1042,7 +1040,7 @@ if (!$lunarProduct) {
 
 .lunar-progress-wrap {
     height: 3px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(74,59,82,0.1);
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 8px;
@@ -1055,18 +1053,18 @@ if (!$lunarProduct) {
 }
 .lunar-progress-label {
     font-size: 0.7rem;
-    color: rgba(255,255,255,0.35);
+    color: var(--muted);
+    opacity: 0.6;
     letter-spacing: 0.05em;
 }
 
 /* Derecha — carta cristal */
 .lunar-crystal-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--white);
+    border: 1px solid rgba(74,59,82,0.08);
     border-radius: 20px;
     overflow: hidden;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-card);
     transition: transform 0.3s;
 }
 .lunar-crystal-card:hover { transform: translateY(-4px); }
@@ -1113,13 +1111,13 @@ if (!$lunarProduct) {
 .lunar-crystal-name {
     font-family: var(--font-serif);
     font-size: 1.4rem;
-    color: #fff;
+    color: var(--brand);
     font-weight: 400;
     margin-bottom: 10px;
 }
 .lunar-crystal-why {
     font-size: 0.84rem;
-    color: rgba(255,255,255,0.65);
+    color: var(--muted);
     font-weight: 300;
     line-height: 1.7;
     margin-bottom: 16px;
@@ -1128,7 +1126,7 @@ if (!$lunarProduct) {
 .lunar-crystal-price {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #fff;
+    color: var(--brand);
     margin-bottom: 14px;
 }
 .lunar-crystal-btn {
