@@ -1,12 +1,12 @@
 <div class="product-card">
-    <div class="product-card-image">
+    <a href="{{ route('product', $product->slug) }}" class="product-card-image">
         <span class="product-tag">{{ $product->properties['chakra'] ?? $product->category->name ?? '' }}</span>
         @if($product->image_url)
             <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy">
         @else
             <div class="product-card-placeholder">{{ $product->category->icon ?? '🔮' }}</div>
         @endif
-    </div>
+    </a>
 
     <div class="product-card-body">
         <div class="product-card-cat">{{ $product->category->name ?? '' }}</div>
