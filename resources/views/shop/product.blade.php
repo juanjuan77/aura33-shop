@@ -75,6 +75,23 @@
                         Añadir al Carrito
                     </button>
                 </form>
+                @else
+                <div class="stock-alert-box">
+                    <p class="stock-alert-title">🔔 Avisame cuando vuelva</p>
+                    <p class="stock-alert-desc">Dejá tu email y te avisamos cuando este cristal esté disponible nuevamente.</p>
+                    @if(session('stock_alert_ok'))
+                        <div class="stock-alert-success">{{ session('stock_alert_ok') }}</div>
+                    @else
+                    <form action="{{ route('stock.alert', $product) }}" method="POST" class="stock-alert-form">
+                        @csrf
+                        <input type="email" name="email" placeholder="tu@email.com" class="stock-alert-input" required>
+                        <button type="submit" class="stock-alert-btn">Avisame ✨</button>
+                    </form>
+                    @if($errors->has('email'))
+                        <p style="color:#c05050; font-size:0.78rem; margin-top:6px;">{{ $errors->first('email') }}</p>
+                    @endif
+                    @endif
+                </div>
                 @endif
 
                 {{-- Propiedades --}}
@@ -284,6 +301,67 @@
     line-height: 1.9;
     font-weight: 300;
     max-width: 720px;
+}
+
+.stock-alert-box {
+    background: linear-gradient(135deg, #fdf8ff, #f5f0fa);
+    border: 1px solid rgba(74,59,82,0.1);
+    border-radius: 14px;
+    padding: 22px 20px;
+}
+.stock-alert-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--brand);
+    margin-bottom: 6px;
+}
+.stock-alert-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+.stock-alert-form {
+    display: flex;
+    gap: 8px;
+}
+.stock-alert-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid rgba(74,59,82,0.18);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    background: var(--white);
+    color: var(--text);
+    outline: none;
+}
+.stock-alert-input:focus { border-color: var(--brand); }
+.stock-alert-btn {
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.stock-alert-btn:hover { background: #3a2d42; }
+.stock-alert-success {
+    background: rgba(90,154,90,0.1);
+    border: 1px solid rgba(90,154,90,0.25);
+    color: #3a6e3a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+}
+@media (max-width: 480px) {
+    .stock-alert-form { flex-direction: column; }
 }
 </style>
 @endpush

@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CrystalAdvisorController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\StockAlertController;
 use App\Http\Controllers\WholesaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,7 @@ Route::get('/nosotros', [ShopController::class, 'about'])->name('about');
 // Carrito
 Route::get('/carrito', [CartController::class, 'index'])->name('cart');
 Route::post('/carrito/agregar/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/stock-aviso/{product}', [StockAlertController::class, 'store'])->name('stock.alert');
 Route::patch('/carrito/actualizar/{product}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/carrito/quitar/{product}', [CartController::class, 'remove'])->name('cart.remove');
 
