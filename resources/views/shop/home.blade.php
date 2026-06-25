@@ -240,7 +240,6 @@ if (!$lunarProduct) {
                         <span class="lunar-crystal-category">{{ $lunarProduct->category->name ?? '' }}</span>
                         <h3 class="lunar-crystal-name">{{ $lunarProduct->name }}</h3>
                         <p class="lunar-crystal-why">{{ $currentPhase['crystal_why'] }}</p>
-                        <div class="lunar-crystal-price">${{ number_format($lunarProduct->price_retail, 0, ',', '.') }}</div>
                         <a href="{{ route('product', $lunarProduct->slug) }}" class="lunar-crystal-btn">Ver cristal →</a>
                     </div>
                 </div>
