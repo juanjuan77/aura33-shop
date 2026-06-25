@@ -581,6 +581,18 @@
             </button>
         </div>
 
+        {{-- Barajando --}}
+        <div id="oracleShuffling" class="oracle-popup-idle" style="display:none;">
+            <p class="oracle-popup-eyebrow">✦ Oráculo AURA33 ✦</p>
+            <h3 class="oracle-popup-title">El universo elige...</h3>
+            <div class="oracle-shuffle-scene">
+                <div class="oracle-shuffle-card oracle-shuffle-card--3"></div>
+                <div class="oracle-shuffle-card oracle-shuffle-card--2"></div>
+                <div class="oracle-shuffle-card oracle-shuffle-card--1"></div>
+            </div>
+            <p class="oracle-popup-subtitle" style="margin-top:16px;">Respirá y conectá con tu energía...</p>
+        </div>
+
         {{-- Carta revelada --}}
         <div id="oraclePopupResult" class="oracle-popup-result" style="display:none;">
             <p class="oracle-popup-eyebrow">✦ Tu mensaje de hoy ✦</p>
@@ -821,6 +833,54 @@
     letter-spacing: 0.22em;
     color: rgba(212,175,55,0.5);
 }
+
+/* ── Shuffle animation ── */
+.oracle-shuffle-scene {
+    position: relative;
+    width: 120px;
+    height: 180px;
+    margin: 0 auto;
+}
+.oracle-shuffle-card {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background: linear-gradient(160deg, #4a3b52, #2d1f35);
+    box-shadow: 0 6px 20px rgba(45,25,53,0.35);
+    border: 1px solid rgba(255,220,160,0.15);
+}
+.oracle-shuffle-card::after {
+    content: '🔮';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 2rem;
+    opacity: 0.6;
+}
+.oracle-shuffle-card--1 { animation: shuffle1 1.8s ease-in-out infinite; z-index: 3; }
+.oracle-shuffle-card--2 { animation: shuffle2 1.8s ease-in-out infinite; z-index: 2; }
+.oracle-shuffle-card--3 { animation: shuffle3 1.8s ease-in-out infinite; z-index: 1; }
+
+@keyframes shuffle1 {
+    0%   { transform: translateX(0)    rotate(0deg); }
+    20%  { transform: translateX(-30px) rotate(-12deg); }
+    50%  { transform: translateX(30px)  rotate(10deg); }
+    80%  { transform: translateX(-15px) rotate(-6deg); }
+    100% { transform: translateX(0)    rotate(0deg); }
+}
+@keyframes shuffle2 {
+    0%   { transform: translateX(0)    rotate(3deg); }
+    20%  { transform: translateX(28px)  rotate(14deg); }
+    50%  { transform: translateX(-25px) rotate(-8deg); }
+    80%  { transform: translateX(18px)  rotate(8deg); }
+    100% { transform: translateX(0)    rotate(3deg); }
+}
+@keyframes shuffle3 {
+    0%   { transform: translateX(0)    rotate(-3deg); }
+    30%  { transform: translateX(20px)  rotate(8deg); }
+    60%  { transform: translateX(-22px) rotate(-10deg); }
+    100% { transform: translateX(0)    rotate(-3deg); }
+}
 </style>
 
 <script>
@@ -865,12 +925,20 @@ function drawOracleCard() {
     lastCardIndex = idx;
     const card = ORACLE_CARDS[idx];
 
-    document.getElementById('oracleCardSymbol').textContent  = card.symbol;
-    document.getElementById('oracleCardKeyword').textContent = card.keyword;
-    document.getElementById('oracleCardMessage').textContent = card.message;
-
+    // Mostrar animación de barajado
     document.getElementById('oraclePopupIdle').style.display   = 'none';
-    document.getElementById('oraclePopupResult').style.display = 'block';
+    document.getElementById('oraclePopupResult').style.display = 'none';
+    document.getElementById('oracleShuffling').style.display   = 'block';
+
+    // Después de la animación revelar la carta
+    setTimeout(() => {
+        document.getElementById('oracleCardSymbol').textContent  = card.symbol;
+        document.getElementById('oracleCardKeyword').textContent = card.keyword;
+        document.getElementById('oracleCardMessage').textContent = card.message;
+
+        document.getElementById('oracleShuffling').style.display   = 'none';
+        document.getElementById('oraclePopupResult').style.display = 'block';
+    }, 1800);
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOraclePopup(); });
