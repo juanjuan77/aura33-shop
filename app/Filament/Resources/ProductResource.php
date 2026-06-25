@@ -96,7 +96,8 @@ class ProductResource extends Resource
                         ->image()
                         ->disk('public')
                         ->directory('products')
-                        ->imagePreviewHeight('200'),
+                        ->imagePreviewHeight('200')
+                        ->dehydrated(fn ($state) => filled($state)),
 
                     Forms\Components\FileUpload::make('images')
                         ->label('Galería de imágenes')
