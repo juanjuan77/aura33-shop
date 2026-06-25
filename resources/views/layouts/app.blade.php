@@ -535,5 +535,347 @@
     </a>
 
     @stack('scripts')
+
+    {{-- ── Oráculo Flotante ─────────────────────────── --}}
+    <button class="oracle-float-btn" id="oracleFloatBtn" onclick="openOraclePopup()" aria-label="Oráculo">
+        <span class="oracle-float-icon">🔮</span>
+        <span class="oracle-float-label">Saca un mensajito del oráculo ✨</span>
+    </button>
+
+    <div class="oracle-popup-overlay" id="oracleOverlay" onclick="closeOraclePopup()"></div>
+
+    <div class="oracle-popup" id="oraclePopup" role="dialog" aria-modal="true">
+        <button class="oracle-popup-close" onclick="closeOraclePopup()" aria-label="Cerrar">✕</button>
+
+        {{-- Estado inicial --}}
+        <div id="oraclePopupIdle" class="oracle-popup-idle">
+            <p class="oracle-popup-eyebrow">✦ Oráculo AURA33 ✦</p>
+            <h3 class="oracle-popup-title">Un mensaje del universo</h3>
+            <p class="oracle-popup-subtitle">Respirá profundo, pensá en lo que necesitás y sacá tu carta.</p>
+            <div class="oracle-popup-card-preview" id="oracleCardPreview">
+                <svg viewBox="0 0 180 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+                    <defs>
+                        <radialGradient id="popBg" cx="50%" cy="40%" r="60%">
+                            <stop offset="0%" stop-color="#7a5a8a"/>
+                            <stop offset="100%" stop-color="#2d1f35"/>
+                        </radialGradient>
+                        <pattern id="popStars" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
+                            <circle cx="4"  cy="4"  r="0.9" fill="rgba(255,220,160,0.45)"/>
+                            <circle cx="22" cy="14" r="0.6" fill="rgba(255,220,160,0.3)"/>
+                            <circle cx="32" cy="28" r="1.1" fill="rgba(255,220,160,0.5)"/>
+                            <circle cx="12" cy="32" r="0.7" fill="rgba(255,220,160,0.3)"/>
+                            <circle cx="28" cy="6"  r="0.8" fill="rgba(255,220,160,0.35)"/>
+                        </pattern>
+                    </defs>
+                    <rect width="180" height="270" rx="14" fill="url(#popBg)"/>
+                    <rect width="180" height="270" rx="14" fill="url(#popStars)"/>
+                    <rect x="10" y="10" width="160" height="250" rx="10" fill="none" stroke="rgba(255,220,160,0.22)" stroke-width="1.2"/>
+                    <text x="90" y="115" text-anchor="middle" font-size="46" fill="rgba(255,220,160,0.9)">🔮</text>
+                    <text x="90" y="152" text-anchor="middle" font-family="Georgia,serif" font-size="11" fill="rgba(255,220,160,0.65)" letter-spacing="3">AURA33</text>
+                    <text x="90" y="169" text-anchor="middle" font-family="Georgia,serif" font-size="8"  fill="rgba(255,220,160,0.4)"  letter-spacing="2">✦ ORÁCULO ✦</text>
+                </svg>
+            </div>
+            <button class="oracle-popup-draw-btn" onclick="drawOracleCard()">
+                <span>Sacar mi carta</span>
+                <span style="font-size:1.1rem;">✨</span>
+            </button>
+        </div>
+
+        {{-- Carta revelada --}}
+        <div id="oraclePopupResult" class="oracle-popup-result" style="display:none;">
+            <p class="oracle-popup-eyebrow">✦ Tu mensaje de hoy ✦</p>
+            <div class="oracle-popup-card-reveal" id="oracleCardReveal">
+                <div class="oracle-reveal-card">
+                    <div class="oracle-reveal-header">
+                        <span id="oracleCardSymbol" class="oracle-reveal-symbol"></span>
+                    </div>
+                    <div class="oracle-reveal-body">
+                        <p class="oracle-reveal-keyword" id="oracleCardKeyword"></p>
+                        <p class="oracle-reveal-message" id="oracleCardMessage"></p>
+                    </div>
+                    <div class="oracle-reveal-footer">
+                        <div class="oracle-reveal-deco"></div>
+                        <span class="oracle-reveal-brand">✦ AURA33 ✦</span>
+                    </div>
+                </div>
+            </div>
+            <button class="oracle-popup-draw-btn oracle-popup-draw-btn--again" onclick="drawOracleCard()">
+                Sacar otra carta ↺
+            </button>
+        </div>
+    </div>
+
+<style>
+/* ── Float button ── */
+.oracle-float-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #4a3b52, #6b4f7a);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 18px 12px 14px;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(74,59,82,0.4), 0 2px 8px rgba(74,59,82,0.2);
+    transition: all 0.25s;
+    animation: floatPulse 3s ease-in-out infinite;
+}
+.oracle-float-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 32px rgba(74,59,82,0.5);
+}
+.oracle-float-icon { font-size: 1.15rem; }
+@keyframes floatPulse {
+    0%,100% { box-shadow: 0 6px 24px rgba(74,59,82,0.4), 0 0 0 0 rgba(107,79,122,0); }
+    50%      { box-shadow: 0 6px 24px rgba(74,59,82,0.4), 0 0 0 8px rgba(107,79,122,0.15); }
+}
+@media (max-width: 600px) {
+    .oracle-float-label { display: none; }
+    .oracle-float-btn { padding: 13px; border-radius: 50%; bottom: 80px; }
+}
+
+/* ── Overlay ── */
+.oracle-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(30,20,38,0.6);
+    z-index: 1000;
+    backdrop-filter: blur(3px);
+}
+.oracle-popup-overlay.active { display: block; }
+
+/* ── Popup ── */
+.oracle-popup {
+    display: none;
+    position: fixed;
+    bottom: 160px;
+    right: 24px;
+    z-index: 1001;
+    width: 320px;
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(45,25,53,0.35), 0 4px 16px rgba(45,25,53,0.15);
+    overflow: hidden;
+    animation: popupIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.oracle-popup.active { display: block; }
+@keyframes popupIn {
+    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@media (max-width: 600px) {
+    .oracle-popup {
+        bottom: 0; right: 0; left: 0;
+        width: 100%; border-radius: 20px 20px 0 0;
+    }
+}
+
+.oracle-popup-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: rgba(74,59,82,0.08);
+    border: none;
+    color: var(--muted);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    z-index: 2;
+}
+.oracle-popup-close:hover { background: rgba(74,59,82,0.15); }
+
+.oracle-popup-idle,
+.oracle-popup-result {
+    padding: 28px 24px 24px;
+    text-align: center;
+}
+
+.oracle-popup-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.oracle-popup-title {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--brand);
+    font-weight: 400;
+    margin-bottom: 6px;
+}
+
+.oracle-popup-subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.oracle-popup-card-preview {
+    width: 120px;
+    height: 180px;
+    margin: 0 auto 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(45,25,53,0.25);
+    animation: cardFloat 4s ease-in-out infinite;
+}
+@keyframes cardFloat {
+    0%,100% { transform: translateY(0) rotate(-1deg); }
+    50%      { transform: translateY(-6px) rotate(1deg); }
+}
+
+.oracle-popup-draw-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--brand), #6b4f7a);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(74,59,82,0.3);
+}
+.oracle-popup-draw-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,59,82,0.4); }
+.oracle-popup-draw-btn--again {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(74,59,82,0.15);
+    box-shadow: none;
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+.oracle-popup-draw-btn--again:hover { background: rgba(74,59,82,0.04); box-shadow: none; transform: none; }
+
+/* ── Carta revelada ── */
+.oracle-popup-card-reveal {
+    margin-bottom: 16px;
+}
+.oracle-reveal-card {
+    background: linear-gradient(160deg, #2d1f35, #4a3b52);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(45,25,53,0.3);
+    animation: cardReveal 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes cardReveal {
+    from { opacity: 0; transform: rotateY(90deg) scale(0.8); }
+    to   { opacity: 1; transform: rotateY(0) scale(1); }
+}
+.oracle-reveal-header {
+    padding: 18px 16px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,220,160,0.1);
+}
+.oracle-reveal-symbol { font-size: 2.4rem; }
+.oracle-reveal-body {
+    padding: 14px 18px 16px;
+}
+.oracle-reveal-keyword {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: rgba(255,220,160,0.95);
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+}
+.oracle-reveal-message {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.78);
+    font-weight: 300;
+    line-height: 1.75;
+    text-align: center;
+    font-style: italic;
+}
+.oracle-reveal-footer {
+    padding: 8px 16px 12px;
+    text-align: center;
+}
+.oracle-reveal-deco {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(212,175,55,0.3), transparent);
+    margin-bottom: 6px;
+}
+.oracle-reveal-brand {
+    font-size: 0.55rem;
+    letter-spacing: 0.22em;
+    color: rgba(212,175,55,0.5);
+}
+</style>
+
+<script>
+const ORACLE_CARDS = [
+    { symbol: '🌙', keyword: 'Confianza', message: 'El universo siempre conspira a tu favor. Suelta el control y confía en el proceso. Lo que debe llegar, llega.' },
+    { symbol: '✨', keyword: 'Luz interior', message: 'Brillas incluso cuando no lo notás. Tu energía transforma los espacios que habitás.' },
+    { symbol: '🌸', keyword: 'Renovación', message: 'Es tiempo de soltar lo que ya no te nutre. Cada final es el comienzo de algo más alineado con tu alma.' },
+    { symbol: '🔮', keyword: 'Intuición', message: 'Tu sabiduría interior sabe el camino. Detente, respira y escucha lo que tu corazón ya conoce.' },
+    { symbol: '💜', keyword: 'Amor propio', message: 'Cuidarte a vos misma/o no es egoísmo, es sabiduría. Llená tu copa antes de repartir.' },
+    { symbol: '🌿', keyword: 'Calma', message: 'En el silencio encuentras las respuestas que buscás. La naturaleza nunca apura sus ciclos.' },
+    { symbol: '⭐', keyword: 'Propósito', message: 'Estás exactamente donde debés estar. Cada paso, incluso los difíciles, te acerca a tu versión más auténtica.' },
+    { symbol: '🦋', keyword: 'Transformación', message: 'Estás en medio de un cambio profundo. No te resistas. La mariposa no sabe que es hermosa hasta que vuela.' },
+    { symbol: '🌊', keyword: 'Fluidez', message: 'Como el agua, encontrá el camino alrededor de los obstáculos. La flexibilidad es tu mayor fortaleza hoy.' },
+    { symbol: '🌺', keyword: 'Abundancia', message: 'La abundancia fluye hacia quienes se sienten merecedores. Abrí los brazos y recibí lo que el universo tiene para vos.' },
+    { symbol: '🕊️', keyword: 'Paz', message: 'La paz que buscás no está afuera. Está en el espacio entre un pensamiento y el siguiente.' },
+    { symbol: '🌟', keyword: 'Gratitud', message: 'Lo que agradecés se multiplica. Hoy, reconocé la magia que ya existe en tu vida.' },
+    { symbol: '💫', keyword: 'Manifestación', message: 'Tus pensamientos crean tu realidad. Elegí con cuidado en qué enfocás tu energía hoy.' },
+    { symbol: '🌈', keyword: 'Esperanza', message: 'Después de toda tormenta viene la calma y con ella, una perspectiva nueva. El arco iris aparece cuando ya pasó la lluvia.' },
+    { symbol: '🔥', keyword: 'Determinación', message: 'Tenés dentro tuyo una fuerza que aún no conocés del todo. Hoy es un buen día para descubrirla.' },
+    { symbol: '🌙', keyword: 'Descanso', message: 'Honrar tu cuerpo con descanso también es productivo. Los sueños procesan lo que la mente despierta no puede.' },
+    { symbol: '💎', keyword: 'Valor', message: 'Como los cristales, la presión te forma. Sos más fuerte y más valioso/a de lo que imaginás.' },
+    { symbol: '🌹', keyword: 'Apertura', message: 'Ábriste a recibir amor en todas sus formas. Lo que das con genuinidad siempre vuelve multiplicado.' },
+];
+
+let lastCardIndex = -1;
+
+function openOraclePopup() {
+    document.getElementById('oracleOverlay').classList.add('active');
+    document.getElementById('oraclePopup').classList.add('active');
+    document.getElementById('oraclePopupIdle').style.display = 'block';
+    document.getElementById('oraclePopupResult').style.display = 'none';
+}
+
+function closeOraclePopup() {
+    document.getElementById('oracleOverlay').classList.remove('active');
+    document.getElementById('oraclePopup').classList.remove('active');
+}
+
+function drawOracleCard() {
+    let idx;
+    do { idx = Math.floor(Math.random() * ORACLE_CARDS.length); } while (idx === lastCardIndex);
+    lastCardIndex = idx;
+    const card = ORACLE_CARDS[idx];
+
+    document.getElementById('oracleCardSymbol').textContent  = card.symbol;
+    document.getElementById('oracleCardKeyword').textContent = card.keyword;
+    document.getElementById('oracleCardMessage').textContent = card.message;
+
+    document.getElementById('oraclePopupIdle').style.display   = 'none';
+    document.getElementById('oraclePopupResult').style.display = 'block';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOraclePopup(); });
+</script>
+
+    @stack('scripts')
 </body>
 </html>
