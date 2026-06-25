@@ -79,16 +79,66 @@
             {{-- Resultado --}}
             <div id="oracle-result" style="display:none;" class="oracle-result-area">
                 <p class="oracle-result-intro">✨ El oráculo encontró tu cristal</p>
-                <div class="oracle-result-card">
-                    <img id="oracle-img" src="" alt="" class="oracle-result-img">
-                    <div class="oracle-result-info">
-                        <span class="oracle-result-cat" id="oracle-cat"></span>
-                        <h3 class="oracle-result-name" id="oracle-name"></h3>
-                        <p class="oracle-result-frase" id="oracle-frase"></p>
-                        <p class="oracle-result-razon" id="oracle-razon"></p>
-                        <a id="oracle-link" href="#" class="oracle-result-btn">Ver mi cristal →</a>
+
+                <div class="oracle-card-scene">
+                    <div class="oracle-card-flip" id="oracle-card-flip">
+                        {{-- Dorso de la carta --}}
+                        <div class="oracle-card-back">
+                            <div class="oracle-card-back-inner">
+                                <div class="oracle-card-back-deco">
+                                    <svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+                                        <defs>
+                                            <radialGradient id="bgGrad" cx="50%" cy="50%" r="60%">
+                                                <stop offset="0%" stop-color="#6b4f7a"/>
+                                                <stop offset="100%" stop-color="#2d1f35"/>
+                                            </radialGradient>
+                                            <pattern id="stars" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                                                <circle cx="5" cy="5" r="1" fill="rgba(255,220,180,0.4)"/>
+                                                <circle cx="25" cy="15" r="0.7" fill="rgba(255,220,180,0.3)"/>
+                                                <circle cx="35" cy="30" r="1.2" fill="rgba(255,220,180,0.5)"/>
+                                                <circle cx="15" cy="35" r="0.8" fill="rgba(255,220,180,0.3)"/>
+                                            </pattern>
+                                        </defs>
+                                        <rect width="200" height="300" rx="16" fill="url(#bgGrad)"/>
+                                        <rect width="200" height="300" rx="16" fill="url(#stars)"/>
+                                        <rect x="12" y="12" width="176" height="276" rx="12" fill="none" stroke="rgba(255,220,180,0.25)" stroke-width="1.5"/>
+                                        <rect x="18" y="18" width="164" height="264" rx="9" fill="none" stroke="rgba(255,220,180,0.12)" stroke-width="1"/>
+                                        <text x="100" y="130" text-anchor="middle" font-size="52" fill="rgba(255,220,180,0.9)">🔮</text>
+                                        <text x="100" y="170" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="rgba(255,220,180,0.7)" letter-spacing="3">AURA33</text>
+                                        <text x="100" y="190" text-anchor="middle" font-family="Georgia, serif" font-size="9" fill="rgba(255,220,180,0.45)" letter-spacing="2">✦ ORÁCULO ✦</text>
+                                        <line x1="50" y1="210" x2="150" y2="210" stroke="rgba(255,220,180,0.2)" stroke-width="0.8"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- Frente de la carta --}}
+                        <div class="oracle-card-front">
+                            <div class="oracle-card-front-inner">
+                                <div class="oracle-card-front-header">
+                                    <span class="oracle-card-eyebrow" id="oracle-cat"></span>
+                                </div>
+                                <div class="oracle-card-img-wrap">
+                                    <img id="oracle-img" src="" alt="" class="oracle-card-crystal-img">
+                                    <div class="oracle-card-img-glow"></div>
+                                </div>
+                                <div class="oracle-card-front-body">
+                                    <h3 class="oracle-card-name" id="oracle-name"></h3>
+                                    <p class="oracle-card-frase" id="oracle-frase"></p>
+                                </div>
+                                <div class="oracle-card-front-footer">
+                                    <div class="oracle-card-deco-line"></div>
+                                    <span class="oracle-card-brand">✦ AURA33 ✦</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <div class="oracle-message-area" id="oracle-message-area" style="display:none;">
+                    <p class="oracle-razon-text" id="oracle-razon"></p>
+                    <a id="oracle-link" href="#" class="oracle-result-btn">Ver mi cristal →</a>
+                </div>
+
                 <button onclick="resetOracle()" class="oracle-retry-btn">Consultar de nuevo</button>
             </div>
 
@@ -113,6 +163,90 @@
                 <p class="collection-count">{{ $cat->products_count }} {{ $cat->products_count == 1 ? 'Producto' : 'Productos' }}</p>
             </a>
             @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ── LUNA ─────────────────────────────────────────────── --}}
+@php
+// Cálculo de fase lunar (ciclo de 29.53 días desde luna nueva conocida)
+$knownNewMoon = new \DateTime('2000-01-06 18:14:00', new \DateTimeZone('UTC'));
+$now          = new \DateTime('now', new \DateTimeZone('UTC'));
+$diff         = $knownNewMoon->diff($now);
+$daysSince    = $diff->days + $diff->h / 24;
+$cycle        = 29.53058867;
+$phase        = fmod($daysSince, $cycle);
+$pct          = $phase / $cycle;
+
+$lunarPhases = [
+    ['name' => 'Luna Nueva',         'emoji' => '🌑', 'range' => [0,    0.063], 'energia' => 'Intención y comienzo',  'desc' => 'La oscuridad invita a sembrar nuevos propósitos. Es tiempo de intención, silencio interior y de plantar las semillas de lo que querés manifestar.', 'crystal' => 'amatista',    'crystal_name' => 'Amatista',    'crystal_why' => 'Potencia la intuición y conecta con tu propósito más profundo en este momento de oscuridad y renovación.'],
+    ['name' => 'Luna Creciente',     'emoji' => '🌒', 'range' => [0.063, 0.25], 'energia' => 'Acción y crecimiento', 'desc' => 'La luz crece y con ella tu energía. Es momento de tomar acción, dar los primeros pasos y nutrir lo que comenzaste.', 'crystal' => 'citrino',      'crystal_name' => 'Citrino',      'crystal_why' => 'Piedra de la abundancia y la acción. Potencia tu motivación y atrae oportunidades mientras la luna crece.'],
+    ['name' => 'Cuarto Creciente',   'emoji' => '🌓', 'range' => [0.25,  0.313],'energia' => 'Decisión y fuerza',   'desc' => 'Momento de tomar decisiones y superar obstáculos. La luna te da fuerza para sostener tus compromisos.', 'crystal' => 'ojo-de-tigre', 'crystal_name' => 'Ojo de Tigre', 'crystal_why' => 'Piedra de la determinación y la confianza. Te ayuda a mantenerte firme y seguro/a en tus decisiones.'],
+    ['name' => 'Luna Gibosa Creciente','emoji'=>'🌔','range' => [0.313, 0.5],  'energia' => 'Perfeccionamiento',   'desc' => 'Estás casi en la cima. Refiná tus proyectos, observá el progreso y preparáte para la plenitud que se acerca.', 'crystal' => 'cuarzo-rosa',  'crystal_name' => 'Cuarzo Rosa',  'crystal_why' => 'Armoniza el corazón y te ayuda a recibir con gracia lo que estás construyendo.'],
+    ['name' => 'Luna Llena',         'emoji' => '🌕', 'range' => [0.5,   0.563],'energia' => 'Plenitud y gratitud', 'desc' => 'La energía está en su punto más alto. Celebrá los logros, agradecé profundamente y liberá lo que ya no necesitás.', 'crystal' => 'cuarzo-rosa',  'crystal_name' => 'Cuarzo Rosa',  'crystal_why' => 'En luna llena amplifica el amor y la gratitud, ayudándote a celebrar con el corazón abierto.'],
+    ['name' => 'Luna Gibosa Menguante','emoji'=>'🌖','range' => [0.563, 0.75], 'energia' => 'Gratitud y entrega',  'desc' => 'Tiempo de compartir lo aprendido, agradecer las bendiciones y comenzar a soltar con amor lo que ya cumplió su ciclo.', 'crystal' => 'amatista',    'crystal_name' => 'Amatista',    'crystal_why' => 'Facilita el proceso de soltar con sabiduría y conecta con la gratitud espiritual.'],
+    ['name' => 'Cuarto Menguante',   'emoji' => '🌗', 'range' => [0.75,  0.813],'energia' => 'Soltar y limpiar',   'desc' => 'La luna invita a hacer limpieza energética: de pensamientos, vínculos y situaciones que ya no vibran con vos.', 'crystal' => 'ojo-de-tigre', 'crystal_name' => 'Ojo de Tigre', 'crystal_why' => 'Protege y despeja energías densas durante el proceso de limpieza y desapego.'],
+    ['name' => 'Luna Menguante',     'emoji' => '🌘', 'range' => [0.813, 1.0],  'energia' => 'Descanso e integración','desc' => 'El ciclo llega a su fin. Descansá, integrá las lecciones y preparáte en silencio para el próximo renacer.', 'crystal' => 'amatista',    'crystal_name' => 'Amatista',    'crystal_why' => 'Acompaña el descanso profundo y la integración espiritual antes del nuevo ciclo.'],
+];
+
+$currentPhase = $lunarPhases[7]; // fallback
+foreach ($lunarPhases as $p) {
+    if ($pct >= $p['range'][0] && $pct < $p['range'][1]) {
+        $currentPhase = $p;
+        break;
+    }
+}
+
+// Buscar el producto recomendado
+$lunarProduct = \App\Models\Product::where('active', true)
+    ->where('stock', '>', 0)
+    ->where('slug', 'like', '%' . $currentPhase['crystal'] . '%')
+    ->first();
+if (!$lunarProduct) {
+    $lunarProduct = \App\Models\Product::where('active', true)->where('stock', '>', 0)->first();
+}
+@endphp
+
+<section class="lunar-section">
+    <div class="lunar-stars" aria-hidden="true"></div>
+    <div class="container">
+        <div class="lunar-grid">
+
+            {{-- Lado izquierdo: fase --}}
+            <div class="lunar-left">
+                <span class="lunar-eyebrow">✦ Calendario Lunar ✦</span>
+                <div class="lunar-moon-wrap">
+                    <span class="lunar-moon-emoji" id="lunarMoonEmoji">{{ $currentPhase['emoji'] }}</span>
+                    <div class="lunar-moon-glow"></div>
+                </div>
+                <h2 class="lunar-phase-name">{{ $currentPhase['name'] }}</h2>
+                <p class="lunar-energia">{{ $currentPhase['energia'] }}</p>
+                <p class="lunar-desc">{{ $currentPhase['desc'] }}</p>
+                <div class="lunar-progress-wrap">
+                    <div class="lunar-progress-bar" style="width: {{ round($pct * 100) }}%"></div>
+                </div>
+                <p class="lunar-progress-label">Ciclo lunar: {{ round($pct * 100) }}% completado</p>
+            </div>
+
+            {{-- Lado derecho: cristal recomendado --}}
+            @if($lunarProduct)
+            <div class="lunar-right">
+                <div class="lunar-crystal-card">
+                    <div class="lunar-crystal-img-wrap">
+                        <img src="{{ $lunarProduct->image_url }}" alt="{{ $lunarProduct->name }}" class="lunar-crystal-img">
+                        <div class="lunar-crystal-badge">Cristal del momento</div>
+                    </div>
+                    <div class="lunar-crystal-info">
+                        <span class="lunar-crystal-category">{{ $lunarProduct->category->name ?? '' }}</span>
+                        <h3 class="lunar-crystal-name">{{ $lunarProduct->name }}</h3>
+                        <p class="lunar-crystal-why">{{ $currentPhase['crystal_why'] }}</p>
+                        <div class="lunar-crystal-price">${{ number_format($lunarProduct->price_retail, 0, ',', '.') }}</div>
+                        <a href="{{ route('product', $lunarProduct->slug) }}" class="lunar-crystal-btn">Ver cristal →</a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
         </div>
     </div>
 </section>
@@ -596,7 +730,7 @@
 /* Resultado */
 .oracle-result-area {
     animation: fadeUp 0.5s ease;
-    text-align: left;
+    text-align: center;
 }
 
 @keyframes fadeUp {
@@ -610,82 +744,163 @@
     color: var(--accent);
     font-size: 1rem;
     text-align: center;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     letter-spacing: 0.03em;
 }
 
-.oracle-result-card {
-    background: var(--white);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--shadow-card);
-    border: 1px solid rgba(74,59,82,0.07);
-    display: flex;
-    gap: 0;
-    margin-bottom: 14px;
-    min-height: 180px;
+/* ── Oracle card flip ── */
+.oracle-card-scene {
+    perspective: 900px;
+    width: 220px;
+    height: 330px;
+    margin: 0 auto 24px;
 }
 
-.oracle-result-img {
-    width: 130px;
-    min-height: 180px;
-    object-fit: cover;
-    flex-shrink: 0;
+.oracle-card-flip {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.oracle-card-flip.flipped {
+    transform: rotateY(180deg);
+}
+
+.oracle-card-back,
+.oracle-card-front {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(45,25,53,0.35), 0 2px 8px rgba(45,25,53,0.2);
+}
+
+.oracle-card-back {
+    background: linear-gradient(160deg, #4a3b52, #2d1f35);
+}
+
+.oracle-card-back-inner,
+.oracle-card-back-deco {
+    width: 100%; height: 100%;
+}
+
+.oracle-card-front {
+    transform: rotateY(180deg);
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+}
+
+.oracle-card-front-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.oracle-card-front-header {
+    background: linear-gradient(135deg, #4a3b52, #6b4f7a);
+    padding: 8px 12px;
+    text-align: center;
+}
+
+.oracle-card-eyebrow {
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: rgba(255,220,180,0.85);
+}
+
+.oracle-card-img-wrap {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
     background: linear-gradient(160deg, #f7e7e6, #ede6f4);
 }
 
-.oracle-result-info {
-    padding: 20px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    flex: 1;
-    min-width: 0;
+.oracle-card-crystal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-.oracle-result-cat {
-    font-size: 0.66rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--accent);
+.oracle-card-img-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 80%, rgba(212,175,55,0.15) 0%, transparent 70%);
+    pointer-events: none;
 }
 
-.oracle-result-name {
+.oracle-card-front-body {
+    padding: 12px 14px 6px;
+    text-align: center;
+}
+
+.oracle-card-name {
     font-family: var(--font-serif);
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: var(--brand);
     font-weight: 400;
     line-height: 1.2;
+    margin-bottom: 4px;
 }
 
-.oracle-result-frase {
+.oracle-card-frase {
     font-family: var(--font-serif);
     font-style: italic;
-    font-size: 0.82rem;
+    font-size: 0.68rem;
     color: var(--brand-light);
-    border-left: 2px solid var(--accent);
-    padding-left: 9px;
-    line-height: 1.5;
-    margin: 2px 0;
+    line-height: 1.4;
 }
 
-.oracle-result-razon {
-    font-size: 0.83rem;
+.oracle-card-front-footer {
+    padding: 6px 14px 10px;
+    text-align: center;
+}
+
+.oracle-card-deco-line {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(74,59,82,0.15), transparent);
+    margin-bottom: 5px;
+}
+
+.oracle-card-brand {
+    font-size: 0.56rem;
+    letter-spacing: 0.2em;
     color: var(--muted);
+    opacity: 0.6;
+}
+
+/* Mensaje debajo de la carta */
+.oracle-message-area {
+    animation: fadeUp 0.6s ease;
+    text-align: left;
+    background: var(--white);
+    border: 1px solid rgba(74,59,82,0.08);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-soft);
+}
+
+.oracle-razon-text {
+    font-size: 0.88rem;
+    color: var(--text);
     font-weight: 300;
-    line-height: 1.7;
+    line-height: 1.75;
+    margin-bottom: 16px;
 }
 
 .oracle-result-btn {
     display: inline-block;
-    align-self: flex-start;
-    margin-top: 4px;
     background: var(--brand);
     color: #fff !important;
-    padding: 9px 20px;
+    padding: 10px 24px;
     border-radius: 50px;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 600;
     transition: all 0.2s;
     white-space: nowrap;
@@ -709,11 +924,228 @@
     text-align: center;
     padding: 10px;
     transition: all 0.2s;
+    margin-top: 8px;
 }
 
 .oracle-retry-btn:hover {
     border-color: var(--brand);
     color: var(--brand);
+}
+
+/* ── Luna ─────────────────────────────────────────── */
+.lunar-section {
+    position: relative;
+    background: linear-gradient(160deg, #120c1a 0%, #1e1228 50%, #0e0a15 100%);
+    padding: 90px 0;
+    overflow: hidden;
+}
+
+.lunar-stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 40% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 10%, rgba(255,255,255,0.55) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 80% 50%, rgba(255,255,255,0.45) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 50% 5%, rgba(255,255,255,0.5) 0%, transparent 100%);
+    pointer-events: none;
+    animation: twinkle 6s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+    from { opacity: 0.7; }
+    to   { opacity: 1; }
+}
+
+.lunar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+@media (max-width: 800px) {
+    .lunar-grid { grid-template-columns: 1fr; gap: 48px; }
+}
+
+/* Izquierda */
+.lunar-eyebrow {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    color: rgba(212,175,55,0.7);
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.lunar-moon-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.lunar-moon-emoji {
+    font-size: 5rem;
+    display: block;
+    animation: moonFloat 5s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));
+}
+@keyframes moonFloat {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+}
+
+.lunar-moon-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.lunar-phase-name {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    color: #fff;
+    font-weight: 400;
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+.lunar-energia {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 16px;
+}
+
+.lunar-desc {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.92rem;
+    font-weight: 300;
+    line-height: 1.8;
+    margin-bottom: 24px;
+}
+
+.lunar-progress-wrap {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.lunar-progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, rgba(212,175,55,0.5), rgba(212,175,55,0.9));
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+.lunar-progress-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.05em;
+}
+
+/* Derecha — carta cristal */
+.lunar-crystal-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    transition: transform 0.3s;
+}
+.lunar-crystal-card:hover { transform: translateY(-4px); }
+
+.lunar-crystal-img-wrap {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+.lunar-crystal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.85) saturate(1.1);
+    transition: transform 0.5s;
+}
+.lunar-crystal-card:hover .lunar-crystal-img { transform: scale(1.04); }
+
+.lunar-crystal-badge {
+    position: absolute;
+    top: 14px; left: 14px;
+    background: rgba(212,175,55,0.9);
+    color: #1a1020;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 12px;
+    border-radius: 50px;
+}
+
+.lunar-crystal-info {
+    padding: 22px 24px 26px;
+}
+.lunar-crystal-category {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+}
+.lunar-crystal-name {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    color: #fff;
+    font-weight: 400;
+    margin-bottom: 10px;
+}
+.lunar-crystal-why {
+    font-size: 0.84rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    font-style: italic;
+}
+.lunar-crystal-price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 14px;
+}
+.lunar-crystal-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), #e8c44a);
+    color: #1a1020 !important;
+    padding: 11px 28px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+}
+.lunar-crystal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,175,55,0.45);
 }
 
 /* ── Mayoristas home ───────────────────────────────── */
@@ -896,14 +1328,26 @@ function askOracle() {
         if (data.product.imagen) {
             img.src = data.product.imagen;
             img.alt = data.product.nombre;
-            img.style.display = 'block';
-        } else {
-            img.style.display = 'none';
         }
+
+        // Mostrar resultado con animación de carta
+        const card = document.getElementById('oracle-card-flip');
+        const messageArea = document.getElementById('oracle-message-area');
+        card.classList.remove('flipped');
+        messageArea.style.display = 'none';
 
         document.getElementById('oracle-form-area').style.display = 'none';
         document.getElementById('oracle-result').style.display = 'block';
         document.getElementById('oracle-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Voltear la carta después de 800ms
+        setTimeout(() => {
+            card.classList.add('flipped');
+            // Mostrar mensaje después de que termine el volteo
+            setTimeout(() => {
+                messageArea.style.display = 'block';
+            }, 900);
+        }, 800);
     })
     .catch(err => {
         document.getElementById('oracle-error').textContent = err.message || 'Error al consultar el oráculo.';
@@ -924,6 +1368,8 @@ function fillHint(el) {
 
 function resetOracle() {
     document.getElementById('oracle-result').style.display = 'none';
+    document.getElementById('oracle-card-flip').classList.remove('flipped');
+    document.getElementById('oracle-message-area').style.display = 'none';
     document.getElementById('oracle-form-area').style.display = 'block';
     document.getElementById('oracle-input').value = '';
     document.getElementById('oracle-count').textContent = '0';
