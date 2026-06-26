@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConsignmentPayment extends Model
 {
-    protected $fillable = ['wholesale_request_id', 'amount', 'receipt', 'notes'];
+    protected $fillable = ['wholesale_request_id', 'consignment_id', 'amount', 'receipt', 'notes'];
 
     public function wholesaler()
     {

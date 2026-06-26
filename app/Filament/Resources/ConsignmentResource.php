@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ConsignmentResource\Pages;
+use App\Filament\Resources\ConsignmentResource\RelationManagers\PaymentsRelationManager;
 use App\Models\Consignment;
 use App\Models\ConsignmentPayment;
 use App\Models\ConsignmentReport;
@@ -42,6 +43,21 @@ class ConsignmentResource extends Resource
                     Forms\Components\Textarea::make('notes')
                         ->label('Notas')
                         ->columnSpanFull(),
+                ]),
+
+            Forms\Components\Section::make('Resumen económico')
+                ->columns(3)
+                ->visibleOn('edit')
+                ->schema([
+                    Forms\Components\Placeholder::make('total_entregado')
+                        ->label('Total entregado')
+                        ->content(fn($record) => $record ? '$' . number_format($record->totalDelivered(), 0, ',', '.') : '-'),
+                    Forms\Components\Placeholder::make('total_pagado')
+                        ->label('Total cobrado')
+                        ->content(fn($record) => $record ? '$' . number_format($record->payments->sum('amount'), 0, ',', '.') : '-'),
+                    Forms\Components\Placeholder::make('saldo')
+                        ->label('Saldo pendiente')
+                        ->content(fn($record) => $record ? '$' . number_format($record->totalDelivered() - $record->payments->sum('amount'), 0, ',', '.') : '-'),
                 ]),
 
             Forms\Components\Section::make('Productos entregados')
@@ -85,6 +101,10 @@ class ConsignmentResource extends Resource
                 Tables\Columns\TextColumn::make('items_count')
                     ->label('Productos')
                     ->counts('items'),
+                Tables\Columns\TextColumn::make('payments_sum_amount')
+                    ->label('Cobrado')
+                    ->sum('payments', 'amount')
+                    ->money('ARS'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
@@ -106,7 +126,12 @@ class ConsignmentResource extends Resource
             ->defaultSort('created_at', 'desc');
     }
 
-    public static function getRelations(): array { return []; }
+    public static function getRelations(): array
+    {
+        return [
+            PaymentsRelationManager::class,
+        ];
+    }
 
     public static function getPages(): array
     {

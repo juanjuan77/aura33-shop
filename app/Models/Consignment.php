@@ -23,8 +23,23 @@ class Consignment extends Model
         return $this->hasMany(ConsignmentReport::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(ConsignmentPayment::class);
+    }
+
     public function totalDelivered(): float
     {
         return $this->items->sum(fn($i) => $i->quantity * $i->unit_price);
+    }
+
+    public function totalPaid(): float
+    {
+        return $this->payments->sum('amount');
+    }
+
+    public function pendingBalance(): float
+    {
+        return $this->totalDelivered() - $this->totalPaid();
     }
 }
