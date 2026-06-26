@@ -83,14 +83,15 @@ class PaymentsRelationManager extends RelationManager
                     ->label('Productos vendidos')
                     ->formatStateUsing(function ($state, $record) {
                         if (! $state) return '—';
-                        $consignment = $record->consignment ?? $this->getOwnerRecord();
+                        $items = is_string($state) ? json_decode($state, true) : $state;
+                        if (! is_array($items) || empty($items)) return '—';
+                        $consignment = $this->getOwnerRecord();
                         $consignment->load('items');
                         $itemMap = $consignment->items->keyBy('id');
-                        return collect($state)->map(function ($s) use ($itemMap) {
-                            $name = isset($itemMap[$s['consignment_item_id']])
-                                ? $itemMap[$s['consignment_item_id']]->product_name
-                                : '?';
-                            return "{$name} x{$s['qty_sold']}";
+                        return collect($items)->map(function ($s) use ($itemMap) {
+                            $id   = $s['consignment_item_id'] ?? null;
+                            $name = ($id && isset($itemMap[$id])) ? $itemMap[$id]->product_name : '?';
+                            return "{$name} x" . ($s['qty_sold'] ?? '?');
                         })->join(', ');
                     }),
                 Tables\Columns\IconColumn::make('receipt')
