@@ -142,117 +142,141 @@
         </div>
 
         {{-- ── CONSIGNACIONES ────────────────────────────── --}}
-        @if($consignments->isNotEmpty() || $reports->isNotEmpty())
+        @if($consignments->isNotEmpty())
         <div style="margin-top: 60px;">
-            <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--brand); font-weight:400; margin-bottom:8px;">
-                Cuenta corriente consignación
+            <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--brand); font-weight:400; margin-bottom:6px;">
+                Cuenta corriente en consignación
             </h2>
             <p style="font-size:0.88rem; color:var(--muted); margin-bottom:28px;">
-                Productos entregados en tu local, ventas reportadas y saldo pendiente.
+                Productos entregados en tu local, lo que se vendió y los pagos recibidos.
             </p>
 
-            {{-- Resumen --}}
-            <div class="consign-summary-grid">
+            {{-- Resumen global --}}
+            <div class="consign-summary-grid" style="margin-bottom:40px;">
                 <div class="consign-summary-card">
-                    <span class="consign-summary-label">Ventas confirmadas</span>
+                    <span class="consign-summary-label">Total entregado</span>
                     <span class="consign-summary-val">${{ number_format($totalDebt, 0, ',', '.') }}</span>
                 </div>
                 <div class="consign-summary-card">
-                    <span class="consign-summary-label">Total pagado</span>
+                    <span class="consign-summary-label">Total cobrado</span>
                     <span class="consign-summary-val consign-summary-val--paid">${{ number_format($totalPaid, 0, ',', '.') }}</span>
                 </div>
                 <div class="consign-summary-card {{ $pendingBalance > 0 ? 'consign-summary-card--pending' : 'consign-summary-card--ok' }}">
                     <span class="consign-summary-label">Saldo pendiente</span>
                     <span class="consign-summary-val consign-summary-val--{{ $pendingBalance > 0 ? 'pending' : 'ok' }}">
-                        ${{ number_format(abs($pendingBalance), 0, ',', '.') }}
-                        @if($pendingBalance <= 0) ✓ @endif
+                        @if($pendingBalance <= 0)
+                            ✓ Al día
+                        @else
+                            ${{ number_format($pendingBalance, 0, ',', '.') }}
+                        @endif
                     </span>
                 </div>
             </div>
 
-            {{-- Entregas --}}
-            @if($consignments->isNotEmpty())
-            <h3 class="consign-section-title">📦 Productos entregados</h3>
-            <div class="orders-table-wrap">
-                <table class="orders-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Productos</th>
-                            <th>Total entregado</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($consignments as $c)
-                        <tr>
-                            <td style="color:var(--muted); font-size:0.85rem;">{{ $c->created_at->format('d/m/Y') }}</td>
-                            <td style="font-size:0.85rem;">
+            {{-- Una card por cada entrega --}}
+            @foreach($consignments as $c)
+            @php
+                $cDelivered = $c->totalDelivered();
+                $cPaid      = $c->payments->sum('amount');
+                $cSaldo     = $cDelivered - $cPaid;
+                $cPct       = $cDelivered > 0 ? min(100, round($cPaid / $cDelivered * 100)) : 0;
+                $itemMap    = $c->items->keyBy('id');
+            @endphp
+            <div class="consign-card">
+
+                {{-- Card header --}}
+                <div class="consign-card-header">
+                    <div>
+                        <span class="consign-card-date">{{ $c->created_at->format('d/m/Y') }}</span>
+                        <span class="consign-card-badge {{ $c->status === 'active' ? 'badge-active' : 'badge-closed' }}">
+                            {{ $c->status === 'active' ? 'Activa' : 'Cerrada' }}
+                        </span>
+                    </div>
+                    <div class="consign-card-totals">
+                        <span class="consign-card-total-label">Total entregado:</span>
+                        <span class="consign-card-total-val">${{ number_format($cDelivered, 0, ',', '.') }}</span>
+                        @if($cSaldo <= 0)
+                            <span class="badge-saldado">✓ Saldado</span>
+                        @else
+                            <span class="badge-debe">Debe ${{ number_format($cSaldo, 0, ',', '.') }}</span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="consign-card-body">
+
+                    {{-- Productos entregados --}}
+                    <div class="consign-col">
+                        <div class="consign-col-title">📦 Productos entregados</div>
+                        <table class="consign-mini-table">
+                            <thead><tr><th>Producto</th><th>Cant.</th><th>Precio u.</th><th>Subtotal</th></tr></thead>
+                            <tbody>
                                 @foreach($c->items as $item)
-                                    <div>{{ $item->product_name }} × {{ $item->quantity }} — ${{ number_format($item->unit_price, 0, ',', '.') }} c/u</div>
+                                <tr>
+                                    <td>{{ $item->product_name }}</td>
+                                    <td style="text-align:center;">{{ $item->quantity }}</td>
+                                    <td>${{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                                    <td style="font-weight:600;">${{ number_format($item->quantity * $item->unit_price, 0, ',', '.') }}</td>
+                                </tr>
                                 @endforeach
-                            </td>
-                            <td style="font-weight:600; color:var(--brand);">${{ number_format($c->totalDelivered(), 0, ',', '.') }}</td>
-                            <td>
-                                <span style="background:{{ $c->status === 'active' ? '#f0fdf4' : '#f5f5f5' }}; color:{{ $c->status === 'active' ? '#15803d' : '#666' }}; padding:3px 10px; border-radius:50px; font-size:0.75rem; font-weight:600;">
-                                    {{ $c->status === 'active' ? 'Activa' : 'Cerrada' }}
-                                </span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @endif
+                            </tbody>
+                        </table>
+                    </div>
 
-            {{-- Reportes de ventas --}}
-            @if($reports->isNotEmpty())
-            <h3 class="consign-section-title" style="margin-top:32px;">📋 Reportes de ventas</h3>
-            <div class="orders-table-wrap">
-                <table class="orders-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Descripción</th>
-                            <th>Monto</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($reports as $r)
-                        <tr>
-                            <td style="color:var(--muted); font-size:0.85rem;">{{ $r->created_at->format('d/m/Y') }}</td>
-                            <td style="font-size:0.85rem;">{{ $r->description }}</td>
-                            <td style="font-weight:600; color:var(--brand);">${{ number_format($r->amount, 0, ',', '.') }}</td>
-                            <td>
-                                @php $rc = match($r->status) { 'confirmed'=>['#f0fdf4','#15803d','Confirmado'], 'rejected'=>['#fef2f2','#b91c1c','Rechazado'], default=>['#fefce8','#a16207','Pendiente'] }; @endphp
-                                <span style="background:{{ $rc[0] }}; color:{{ $rc[1] }}; padding:3px 10px; border-radius:50px; font-size:0.75rem; font-weight:600;">{{ $rc[2] }}</span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            @endif
+                    {{-- Pagos recibidos --}}
+                    <div class="consign-col">
+                        <div class="consign-col-title">💳 Pagos recibidos</div>
 
-            {{-- Pagos --}}
-            @if($payments->isNotEmpty())
-            <h3 class="consign-section-title" style="margin-top:32px;">💳 Pagos registrados</h3>
-            <div class="orders-table-wrap">
-                <table class="orders-table">
-                    <thead><tr><th>Fecha</th><th>Notas</th><th>Monto</th></tr></thead>
-                    <tbody>
-                        @foreach($payments as $p)
-                        <tr>
-                            <td style="color:var(--muted); font-size:0.85rem;">{{ $p->created_at->format('d/m/Y') }}</td>
-                            <td style="font-size:0.85rem;">{{ $p->notes ?: '—' }}</td>
-                            <td style="font-weight:600; color:#15803d;">${{ number_format($p->amount, 0, ',', '.') }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        @if($c->payments->isEmpty())
+                            <p style="font-size:0.85rem; color:var(--muted); padding:12px 0;">Sin pagos registrados aún.</p>
+                        @else
+                            @foreach($c->payments as $pay)
+                            <div class="consign-pay-row">
+                                <div class="consign-pay-top">
+                                    <span class="consign-pay-date">{{ $pay->created_at->format('d/m/Y') }}</span>
+                                    <span class="consign-pay-amount">${{ number_format($pay->amount, 0, ',', '.') }}</span>
+                                </div>
+                                @if($pay->items_sold)
+                                @php $sold = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold; @endphp
+                                @if(is_array($sold) && count($sold))
+                                <div class="consign-pay-items">
+                                    @foreach($sold as $s)
+                                    @php
+                                        $sid  = (int)($s['consignment_item_id'] ?? 0);
+                                        $name = $itemMap->has($sid) ? $itemMap->get($sid)->product_name : '?';
+                                    @endphp
+                                    <span class="consign-pay-tag">{{ $name }} ×{{ $s['qty_sold'] ?? '?' }}</span>
+                                    @endforeach
+                                </div>
+                                @endif
+                                @endif
+                                @if($pay->notes)
+                                <div style="font-size:0.78rem; color:var(--muted); margin-top:4px;">{{ $pay->notes }}</div>
+                                @endif
+                            </div>
+                            @endforeach
+                        @endif
+
+                        {{-- Barra progreso --}}
+                        <div class="consign-progress-wrap">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-bottom:6px;">
+                                <span>Cobrado: ${{ number_format($cPaid, 0, ',', '.') }}</span>
+                                <span>{{ $cPct }}%</span>
+                            </div>
+                            <div class="consign-progress-bar">
+                                <div class="consign-progress-fill" style="width:{{ $cPct }}%; background:{{ $cSaldo <= 0 ? '#22c55e' : '#f59e0b' }};"></div>
+                            </div>
+                            @if($cSaldo > 0)
+                            <div style="font-size:0.78rem; color:#b91c1c; margin-top:6px; font-weight:600;">
+                                Saldo pendiente: ${{ number_format($cSaldo, 0, ',', '.') }}
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                </div>{{-- /card-body --}}
             </div>
-            @endif
+            @endforeach
 
         </div>
         @endif
@@ -477,12 +501,145 @@
 .consign-summary-val--pending { color: #b91c1c; }
 .consign-summary-val--ok      { color: #15803d; }
 
-.consign-section-title {
-    font-family: var(--font-serif);
-    font-size: 1.1rem;
+.consign-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+}
+
+.consign-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 24px;
+    background: rgba(74,59,82,0.03);
+    border-bottom: 1px solid var(--border);
+}
+
+.consign-card-date {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-right: 10px;
+}
+
+.consign-card-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.badge-active { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+.badge-closed { background:#f5f5f5; color:#666; border:1px solid #e5e5e5; }
+.badge-saldado { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; }
+.badge-debe { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; }
+
+.consign-card-totals {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.consign-card-total-label { font-size:0.78rem; color:var(--muted); }
+.consign-card-total-val { font-weight:700; color:var(--brand); font-size:1rem; }
+
+.consign-card-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+@media (max-width: 700px) { .consign-card-body { grid-template-columns: 1fr; } }
+
+.consign-col {
+    padding: 20px 24px;
+}
+.consign-col:first-child {
+    border-right: 1px solid var(--border);
+}
+@media (max-width: 700px) { .consign-col:first-child { border-right: none; border-bottom: 1px solid var(--border); } }
+
+.consign-col-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--brand);
-    font-weight: 400;
     margin-bottom: 14px;
+}
+
+.consign-mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+}
+.consign-mini-table th {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    padding: 4px 8px 8px 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+.consign-mini-table td {
+    padding: 8px 8px 8px 0;
+    border-bottom: 1px solid rgba(74,59,82,0.04);
+    color: var(--text);
+}
+.consign-mini-table tr:last-child td { border-bottom: none; }
+
+.consign-pay-row {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(74,59,82,0.05);
+}
+.consign-pay-row:last-of-type { border-bottom: none; }
+
+.consign-pay-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.consign-pay-date { font-size:0.8rem; color:var(--muted); }
+.consign-pay-amount { font-weight:700; color:#15803d; font-size:0.95rem; }
+
+.consign-pay-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.consign-pay-tag {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 50px;
+}
+
+.consign-progress-wrap {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+.consign-progress-bar {
+    background: #e5e7eb;
+    border-radius: 99px;
+    height: 8px;
+}
+.consign-progress-fill {
+    height: 8px;
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    min-width: 4px;
 }
 </style>
 @endpush

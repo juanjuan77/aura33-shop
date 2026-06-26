@@ -127,7 +127,7 @@ class WholesaleController extends Controller
             ->get();
 
         $consignments = Consignment::where('wholesale_request_id', $wholesaler->id)
-            ->with('items')
+            ->with(['items', 'payments'])
             ->latest()
             ->get();
 
@@ -139,8 +139,8 @@ class WholesaleController extends Controller
             ->latest()
             ->get();
 
-        $totalDebt    = $reports->where('status', 'confirmed')->sum('amount');
-        $totalPaid    = $payments->sum('amount');
+        $totalDebt      = $consignments->sum(fn($c) => $c->totalDelivered());
+        $totalPaid      = $payments->sum('amount');
         $pendingBalance = $totalDebt - $totalPaid;
 
         return view('shop.wholesale.portal', compact(
