@@ -89,8 +89,8 @@ class PaymentsRelationManager extends RelationManager
                         $consignment->load('items');
                         $itemMap = $consignment->items->keyBy('id');
                         return collect($items)->map(function ($s) use ($itemMap) {
-                            $id   = $s['consignment_item_id'] ?? null;
-                            $name = ($id && isset($itemMap[$id])) ? $itemMap[$id]->product_name : '?';
+                            $id   = isset($s['consignment_item_id']) ? (int) $s['consignment_item_id'] : null;
+                            $name = ($id && $itemMap->has($id)) ? $itemMap->get($id)->product_name : '?';
                             return "{$name} x" . ($s['qty_sold'] ?? '?');
                         })->join(', ');
                     }),

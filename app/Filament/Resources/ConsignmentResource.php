@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\HtmlString;
 
 class ConsignmentResource extends Resource
 {
@@ -45,19 +46,43 @@ class ConsignmentResource extends Resource
                         ->columnSpanFull(),
                 ]),
 
-            Forms\Components\Section::make('Resumen económico')
-                ->columns(3)
+            Forms\Components\Section::make('')
                 ->visibleOn('edit')
                 ->schema([
-                    Forms\Components\Placeholder::make('total_entregado')
-                        ->label('Total entregado')
-                        ->content(fn($record) => $record ? '$' . number_format($record->totalDelivered(), 0, ',', '.') : '-'),
-                    Forms\Components\Placeholder::make('total_pagado')
-                        ->label('Total cobrado')
-                        ->content(fn($record) => $record ? '$' . number_format($record->payments->sum('amount'), 0, ',', '.') : '-'),
-                    Forms\Components\Placeholder::make('saldo')
-                        ->label('Saldo pendiente')
-                        ->content(fn($record) => $record ? '$' . number_format($record->totalDelivered() - $record->payments->sum('amount'), 0, ',', '.') : '-'),
+                    Forms\Components\Placeholder::make('resumen_visual')
+                        ->label('')
+                        ->content(function ($record) {
+                            if (! $record) return '';
+                            $record->load('items', 'payments');
+                            $totalItems    = $record->items->sum('quantity');
+                            $totalEntregado = $record->totalDelivered();
+                            $totalPagado   = $record->payments->sum('amount');
+                            $saldo         = $totalEntregado - $totalPagado;
+                            $pct           = $totalEntregado > 0 ? min(100, round($totalPagado / $totalEntregado * 100)) : 0;
+                            $saldoColor    = $saldo <= 0 ? '#22c55e' : '#ef4444';
+                            $barColor      = $saldo <= 0 ? '#22c55e' : '#f59e0b';
+
+                            return new HtmlString("
+                                <div style='display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px'>
+                                    <div style='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;text-align:center'>
+                                        <div style='font-size:2rem;font-weight:700;color:#16a34a'>$totalItems</div>
+                                        <div style='font-size:.75rem;color:#166534;margin-top:4px;text-transform:uppercase;letter-spacing:.05em'>Unidades entregadas</div>
+                                    </div>
+                                    <div style='background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px;text-align:center'>
+                                        <div style='font-size:1.5rem;font-weight:700;color:#1d4ed8'>\$" . number_format($totalPagado, 0, ',', '.') . "</div>
+                                        <div style='font-size:.75rem;color:#1e40af;margin-top:4px;text-transform:uppercase;letter-spacing:.05em'>Cobrado de \$" . number_format($totalEntregado, 0, ',', '.') . "</div>
+                                        <div style='background:#dbeafe;border-radius:99px;height:6px;margin-top:10px'>
+                                            <div style='background:{$barColor};height:6px;border-radius:99px;width:{$pct}%'></div>
+                                        </div>
+                                        <div style='font-size:.7rem;color:#6b7280;margin-top:4px'>{$pct}% cobrado</div>
+                                    </div>
+                                    <div style='background:#fefce8;border:1px solid #fef08a;border-radius:12px;padding:20px;text-align:center'>
+                                        <div style='font-size:1.5rem;font-weight:700;color:{$saldoColor}'>\$" . number_format(abs($saldo), 0, ',', '.') . "</div>
+                                        <div style='font-size:.75rem;color:#713f12;margin-top:4px;text-transform:uppercase;letter-spacing:.05em'>" . ($saldo <= 0 ? '✓ Saldado' : 'Saldo pendiente') . "</div>
+                                    </div>
+                                </div>
+                            ");
+                        }),
                 ]),
 
             Forms\Components\Section::make('Productos entregados')
