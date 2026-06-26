@@ -6,10 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class ConsignmentPayment extends Model
 {
-    protected $fillable = ['wholesale_request_id', 'consignment_id', 'amount', 'receipt', 'notes'];
+    protected $fillable = ['wholesale_request_id', 'consignment_id', 'amount', 'receipt', 'notes', 'items_sold'];
+
+    protected $casts = ['items_sold' => 'array'];
 
     public function wholesaler()
     {
         return $this->belongsTo(WholesaleRequest::class, 'wholesale_request_id');
+    }
+
+    public function consignment()
+    {
+        return $this->belongsTo(Consignment::class);
     }
 }

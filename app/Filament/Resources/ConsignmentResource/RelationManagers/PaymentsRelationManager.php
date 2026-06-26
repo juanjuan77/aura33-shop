@@ -15,23 +15,54 @@ class PaymentsRelationManager extends RelationManager
 
     public function form(Form $form): Form
     {
+        $consignment = $this->getOwnerRecord();
+        $consignment->load('items');
+
+        $itemOptions = $consignment->items->mapWithKeys(
+            fn($item) => [$item->id => "{$item->product_name} (entregados: {$item->quantity})"]
+        )->toArray();
+
         return $form->schema([
-            Forms\Components\TextInput::make('amount')
-                ->label('Monto pagado ($)')
-                ->numeric()
-                ->required()
-                ->prefix('$'),
-            Forms\Components\FileUpload::make('receipt')
-                ->label('Comprobante (foto/PDF)')
-                ->disk('public')
-                ->directory('consignment-receipts')
-                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
-                ->dehydrated(fn($state) => filled($state))
-                ->columnSpanFull(),
-            Forms\Components\Textarea::make('notes')
-                ->label('Notas')
-                ->placeholder('Ej: transferencia Mercado Pago 15/06')
-                ->columnSpanFull(),
+            Forms\Components\Section::make('¿Qué productos se vendieron?')
+                ->schema([
+                    Forms\Components\Repeater::make('items_sold')
+                        ->label('')
+                        ->schema([
+                            Forms\Components\Select::make('consignment_item_id')
+                                ->label('Producto')
+                                ->options($itemOptions)
+                                ->required()
+                                ->reactive(),
+                            Forms\Components\TextInput::make('qty_sold')
+                                ->label('Cantidad vendida')
+                                ->numeric()
+                                ->required()
+                                ->minValue(1),
+                        ])
+                        ->columns(2)
+                        ->addActionLabel('+ Agregar producto vendido')
+                        ->defaultItems(1),
+                ]),
+
+            Forms\Components\Section::make('Pago')
+                ->columns(2)
+                ->schema([
+                    Forms\Components\TextInput::make('amount')
+                        ->label('Monto cobrado ($)')
+                        ->numeric()
+                        ->required()
+                        ->prefix('$'),
+                    Forms\Components\FileUpload::make('receipt')
+                        ->label('Comprobante (foto/PDF)')
+                        ->disk('public')
+                        ->directory('consignment-receipts')
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+                        ->dehydrated(fn($state) => filled($state)),
+                    Forms\Components\Textarea::make('notes')
+                        ->label('Notas')
+                        ->placeholder('Ej: transferencia MP 15/06')
+                        ->columnSpanFull(),
+                ]),
         ]);
     }
 
@@ -45,9 +76,23 @@ class PaymentsRelationManager extends RelationManager
                     ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount')
-                    ->label('Monto')
+                    ->label('Monto cobrado')
                     ->money('ARS')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('items_sold')
+                    ->label('Productos vendidos')
+                    ->formatStateUsing(function ($state, $record) {
+                        if (! $state) return '—';
+                        $consignment = $record->consignment ?? $this->getOwnerRecord();
+                        $consignment->load('items');
+                        $itemMap = $consignment->items->keyBy('id');
+                        return collect($state)->map(function ($s) use ($itemMap) {
+                            $name = isset($itemMap[$s['consignment_item_id']])
+                                ? $itemMap[$s['consignment_item_id']]->product_name
+                                : '?';
+                            return "{$name} x{$s['qty_sold']}";
+                        })->join(', ');
+                    }),
                 Tables\Columns\IconColumn::make('receipt')
                     ->label('Comprobante')
                     ->boolean()
@@ -55,11 +100,11 @@ class PaymentsRelationManager extends RelationManager
                     ->falseIcon('heroicon-o-x-mark'),
                 Tables\Columns\TextColumn::make('notes')
                     ->label('Notas')
-                    ->limit(40),
+                    ->limit(30),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('+ Agregar pago')
+                    ->label('+ Registrar pago')
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['wholesale_request_id'] = $this->getOwnerRecord()->wholesale_request_id;
                         return $data;
