@@ -1,8 +1,11 @@
-<div class="product-card">
+<div class="product-card {{ !$product->isInStock() ? 'product-card--out' : '' }}">
     <a href="{{ route('product', $product->slug) }}" class="product-card-image">
         <span class="product-tag">{{ $product->properties['chakra'] ?? $product->category->name ?? '' }}</span>
+        @if(!$product->isInStock())
+            <span class="product-card-out-badge">Sin stock</span>
+        @endif
         @if($product->image_url)
-            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy">
+            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy" class="{{ !$product->isInStock() ? 'img-out' : '' }}">
         @else
             <div class="product-card-placeholder">{{ $product->category->icon ?? '🔮' }}</div>
         @endif
@@ -32,7 +35,11 @@
                 <button type="submit" class="btn-add-cart" title="Añadir al carrito">+</button>
             </form>
         @else
-            <button disabled class="btn-add-cart" style="opacity:0.4;cursor:not-allowed;">×</button>
+            <button class="btn-notify-me"
+                onclick="openNotifyPopup('{{ $product->id }}', '{{ addslashes($product->name) }}', '{{ route('stock.alert', $product) }}')"
+                title="Avisame cuando haya stock">
+                🔔 Avisame
+            </button>
         @endif
     </div>
 </div>

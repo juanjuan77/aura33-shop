@@ -88,8 +88,8 @@ class ConsignmentResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->formatStateUsing(fn($s) => $s === 'active' ? 'Activa' : 'Cerrada')
-                    ->color(fn($s) => $s === 'active' ? 'success' : 'gray'),
+                    ->formatStateUsing(fn($state) => $state === 'active' ? 'Activa' : 'Cerrada')
+                    ->color(fn($state) => $state === 'active' ? 'success' : 'gray'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha')
                     ->date('d/m/Y')

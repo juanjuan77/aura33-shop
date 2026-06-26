@@ -91,13 +91,13 @@ class ConsignmentReportResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->formatStateUsing(fn($s) => match($s) {
+                    ->formatStateUsing(fn($state) => match($state) {
                         'pending'   => 'Pendiente',
                         'confirmed' => 'Confirmado',
                         'rejected'  => 'Rechazado',
-                        default     => $s,
+                        default     => $state,
                     })
-                    ->color(fn($s) => match($s) {
+                    ->color(fn($state) => match($state) {
                         'confirmed' => 'success',
                         'rejected'  => 'danger',
                         default     => 'warning',

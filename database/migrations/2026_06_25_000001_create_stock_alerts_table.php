@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('stock_alerts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('product_id');
             $table->string('email');
             $table->timestamp('notified_at')->nullable();
             $table->timestamps();

@@ -321,9 +321,9 @@ class CartController extends Controller
         }
 
         $zone     = $province ? ShippingZone::forProvince($province) : null;
-        $freeFrom = $zone ? $zone->free_from : 50000;
+        $freeFrom = $zone ? $zone->free_from : PHP_INT_MAX;
         $baseRate = $zone ? $zone->price : 5500;
-        $shipping = $subtotal >= $freeFrom ? 0 : $baseRate;
+        $shipping = ($province && $subtotal >= $freeFrom) ? 0 : $baseRate;
 
         return [
             'subtotal'      => $subtotal,

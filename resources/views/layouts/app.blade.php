@@ -536,6 +536,195 @@
 
     @stack('scripts')
 
+    {{-- ── Popup Avisame ───────────────────────────── --}}
+    <div class="notify-overlay" id="notifyOverlay" onclick="closeNotifyPopup()"></div>
+    <div class="notify-popup" id="notifyPopup" role="dialog">
+        <button class="notify-popup-close" onclick="closeNotifyPopup()">✕</button>
+        <div class="notify-popup-inner">
+            <span class="notify-popup-icon">🔔</span>
+            <h3 class="notify-popup-title">Avisame cuando vuelva</h3>
+            <p class="notify-popup-product" id="notifyProductName"></p>
+            <p class="notify-popup-desc">Dejá tu email y te avisamos cuando este cristal esté disponible nuevamente.</p>
+            <form id="notifyForm" method="POST">
+                @csrf
+                <div class="notify-popup-field">
+                    <input type="email" name="email" id="notifyEmail" placeholder="tu@email.com" class="notify-popup-input" required>
+                    <button type="submit" class="notify-popup-btn">Avisame ✨</button>
+                </div>
+                <p class="notify-popup-success" id="notifySuccess" style="display:none;">¡Listo! Te avisamos cuando vuelva 🔮</p>
+            </form>
+        </div>
+    </div>
+
+<style>
+.product-card--out { opacity: 0.88; }
+.product-card-out-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(44,37,48,0.75);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 50px;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+}
+.img-out { filter: grayscale(30%); }
+.btn-notify-me {
+    background: transparent;
+    border: 1px solid rgba(74,59,82,0.2);
+    border-radius: 50px;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.btn-notify-me:hover { border-color: var(--brand); color: var(--brand); }
+
+/* Notify popup */
+.notify-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(30,20,38,0.55);
+    z-index: 1000;
+    backdrop-filter: blur(3px);
+}
+.notify-overlay.active { display: block; }
+.notify-popup {
+    display: none;
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    z-index: 1001;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    background: var(--white);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(45,25,53,0.3);
+    animation: notifyIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.notify-popup.active { display: block; }
+@keyframes notifyIn {
+    from { opacity:0; transform: translate(-50%,-50%) scale(0.85); }
+    to   { opacity:1; transform: translate(-50%,-50%) scale(1); }
+}
+.notify-popup-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: rgba(74,59,82,0.08);
+    border: none;
+    color: var(--muted);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+.notify-popup-close:hover { background: rgba(74,59,82,0.15); }
+.notify-popup-inner { padding: 32px 28px 28px; text-align: center; }
+.notify-popup-icon { font-size: 2.2rem; display: block; margin-bottom: 10px; }
+.notify-popup-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--brand);
+    font-weight: 400;
+    margin-bottom: 4px;
+}
+.notify-popup-product {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+}
+.notify-popup-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+.notify-popup-field { display: flex; gap: 8px; }
+.notify-popup-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid rgba(74,59,82,0.18);
+    border-radius: 8px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+}
+.notify-popup-input:focus { border-color: var(--brand); }
+.notify-popup-btn {
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.notify-popup-btn:hover { background: #3a2d42; }
+.notify-popup-success {
+    margin-top: 12px;
+    background: rgba(90,154,90,0.1);
+    border: 1px solid rgba(90,154,90,0.25);
+    color: #3a6e3a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+}
+</style>
+
+<script>
+function openNotifyPopup(productId, productName, actionUrl) {
+    document.getElementById('notifyProductName').textContent = productName;
+    document.getElementById('notifyForm').action = actionUrl;
+    document.getElementById('notifyEmail').value = '';
+    document.getElementById('notifySuccess').style.display = 'none';
+    document.getElementById('notifyForm').style.display = 'block';
+    document.getElementById('notifyOverlay').classList.add('active');
+    document.getElementById('notifyPopup').classList.add('active');
+    setTimeout(() => document.getElementById('notifyEmail').focus(), 300);
+}
+function closeNotifyPopup() {
+    document.getElementById('notifyOverlay').classList.remove('active');
+    document.getElementById('notifyPopup').classList.remove('active');
+}
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('notifyForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const data = new FormData(form);
+            fetch(form.action, { method: 'POST', body: data, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(() => {
+                    form.style.display = 'none';
+                    document.getElementById('notifySuccess').style.display = 'block';
+                    setTimeout(closeNotifyPopup, 2500);
+                })
+                .catch(() => form.submit());
+        });
+    }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNotifyPopup(); });
+</script>
+
     {{-- ── Oráculo Flotante ─────────────────────────── --}}
     <button class="oracle-float-btn" id="oracleFloatBtn" onclick="openOraclePopup()" aria-label="Oráculo">
         <span class="oracle-float-icon">🔮</span>
