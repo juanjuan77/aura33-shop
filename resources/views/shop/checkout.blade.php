@@ -65,7 +65,7 @@
                             <div class="form-group">
                                 <label>Provincia *</label>
                                 <select name="shipping_province" id="shipping_province" class="form-input" required onchange="recalcShipping()">
-                                    <option value="">Seleccioná tu provincia</option>
+                                    <option value="" disabled selected>Seleccioná tu provincia</option>
                                     @foreach(\App\Models\ShippingZone::allProvinces() as $prov)
                                         <option value="{{ $prov }}" {{ old('shipping_province') == $prov ? 'selected' : '' }}>{{ $prov }}</option>
                                     @endforeach
