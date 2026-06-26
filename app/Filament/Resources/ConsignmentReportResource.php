@@ -20,6 +20,7 @@ class ConsignmentReportResource extends Resource
     protected static ?string $model = ConsignmentReport::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Reportes / Pagos';
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $modelLabel = 'Reporte';
     protected static ?string $pluralModelLabel = 'Reportes y Pagos';
     protected static ?int $navigationSort = 6;
