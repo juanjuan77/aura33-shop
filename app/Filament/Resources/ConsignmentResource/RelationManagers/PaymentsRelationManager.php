@@ -85,14 +85,14 @@ class PaymentsRelationManager extends RelationManager
                         if (! $state) return '—';
                         $items = is_string($state) ? json_decode($state, true) : $state;
                         if (! is_array($items) || empty($items)) return '—';
-                        $consignment = $this->getOwnerRecord();
-                        $consignment->load('items');
-                        $itemMap = $consignment->items->keyBy('id');
+                        // Load items via consignment_id on the payment record
+                        $record->load('consignment.items');
+                        $itemMap = $record->consignment?->items->keyBy('id') ?? collect();
                         return collect($items)->map(function ($s) use ($itemMap) {
-                            $id   = isset($s['consignment_item_id']) ? (int) $s['consignment_item_id'] : null;
-                            $name = ($id && $itemMap->has($id)) ? $itemMap->get($id)->product_name : '?';
-                            return "{$name} x" . ($s['qty_sold'] ?? '?');
-                        })->join(', ');
+                            $id   = (int) ($s['consignment_item_id'] ?? 0);
+                            $name = $itemMap->has($id) ? $itemMap->get($id)->product_name : "item#{$id}";
+                            return "{$name} ×" . ($s['qty_sold'] ?? '?');
+                        })->join(' | ');
                     }),
                 Tables\Columns\IconColumn::make('receipt')
                     ->label('Comprobante')

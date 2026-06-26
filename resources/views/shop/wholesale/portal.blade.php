@@ -237,16 +237,21 @@
                                     <span class="consign-pay-amount">${{ number_format($pay->amount, 0, ',', '.') }}</span>
                                 </div>
                                 @if($pay->items_sold)
-                                @php $sold = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold; @endphp
+                                @php
+                                    $sold = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
+                                    $totalUnits = collect($sold)->sum(fn($s) => (int)($s['qty_sold'] ?? 0));
+                                @endphp
                                 @if(is_array($sold) && count($sold))
                                 <div class="consign-pay-items">
                                     @foreach($sold as $s)
                                     @php
                                         $sid  = (int)($s['consignment_item_id'] ?? 0);
                                         $name = $itemMap->has($sid) ? $itemMap->get($sid)->product_name : '?';
+                                        $qty  = $s['qty_sold'] ?? '?';
                                     @endphp
-                                    <span class="consign-pay-tag">{{ $name }} ×{{ $s['qty_sold'] ?? '?' }}</span>
+                                    <span class="consign-pay-tag">{{ $name }} <strong>×{{ $qty }}</strong></span>
                                     @endforeach
+                                    <span class="consign-pay-tag-units">{{ $totalUnits }} unid. vendidas</span>
                                 </div>
                                 @endif
                                 @endif
@@ -621,6 +626,15 @@
     border: 1px solid #bfdbfe;
     font-size: 0.72rem;
     font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 50px;
+}
+.consign-pay-tag-units {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    font-size: 0.72rem;
+    font-weight: 700;
     padding: 2px 9px;
     border-radius: 50px;
 }
