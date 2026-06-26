@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Consignment extends Model
 {
-    protected $fillable = ['wholesale_request_id', 'notes', 'status'];
+    protected $fillable = ['wholesale_request_id', 'notes', 'status', 'delivery_date'];
+
+    protected $casts = ['delivery_date' => 'date'];
 
     public function wholesaler()
     {

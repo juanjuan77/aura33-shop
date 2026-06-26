@@ -173,6 +173,87 @@
                 </div>
             </div>
 
+            {{-- Informe por producto --}}
+            @if($reportByProduct->isNotEmpty())
+            <div class="consign-report-wrap">
+                <h3 class="consign-section-title" style="margin-bottom:16px;">📊 Informe por producto</h3>
+                <div class="orders-table-wrap">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Producto</th>
+                                <th style="text-align:center;">Entregados</th>
+                                <th style="text-align:center;">Vendidos</th>
+                                <th style="text-align:center;">Stock tuyo</th>
+                                <th style="text-align:center;">Pagados</th>
+                                <th style="text-align:center;">Debés</th>
+                                <th style="text-align:right;">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $prevCat = null; @endphp
+                            @foreach($reportByProduct as $row)
+                            @if($row['category'] !== $prevCat)
+                            <tr style="background:rgba(74,59,82,0.03);">
+                                <td colspan="8" style="padding:8px 18px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted);">
+                                    {{ $row['category'] }}
+                                </td>
+                            </tr>
+                            @php $prevCat = $row['category']; @endphp
+                            @endif
+                            <tr>
+                                <td></td>
+                                <td style="font-weight:600; font-size:0.88rem;">{{ $row['product_name'] }}</td>
+                                <td style="text-align:center;"><span class="report-badge report-badge--blue">{{ $row['delivered'] }}</span></td>
+                                <td style="text-align:center;"><span class="report-badge report-badge--purple">{{ $row['sold'] }}</span></td>
+                                <td style="text-align:center;"><span class="report-badge report-badge--gray">{{ $row['stock'] }}</span></td>
+                                <td style="text-align:center;"><span class="report-badge report-badge--green">{{ $row['paid_qty'] }}</span></td>
+                                <td style="text-align:center;">
+                                    @if($row['debe'] > 0)
+                                        <span class="report-badge report-badge--red">{{ $row['debe'] }}</span>
+                                    @else
+                                        <span style="color:#15803d; font-weight:700; font-size:0.8rem;">✓</span>
+                                    @endif
+                                </td>
+                                <td style="text-align:right; font-weight:700; font-size:0.88rem; color:{{ $row['debe_amount'] > 0 ? '#b91c1c' : '#15803d' }};">
+                                    @if($row['debe_amount'] > 0)
+                                        ${{ number_format($row['debe_amount'], 0, ',', '.') }}
+                                    @else —
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Gráfico ventas por categoría --}}
+                @php
+                    $chartCats = $reportByProduct->groupBy('category')->map(fn($r) => $r->sum('sold'))->filter()->sortDesc();
+                    $chartMax  = $chartCats->max() ?: 1;
+                @endphp
+                @if($chartCats->isNotEmpty())
+                <div style="margin-top:24px; background:var(--white); border:1px solid var(--border); border-radius:14px; padding:24px; box-shadow:var(--shadow-soft);">
+                    <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:20px;">
+                        Más vendido por categoría
+                    </div>
+                    @foreach($chartCats as $cat => $qty)
+                    @php $pct = round($qty / $chartMax * 100); @endphp
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                        <div style="width:120px; font-size:0.78rem; color:var(--text); text-align:right; flex-shrink:0;">{{ $cat }}</div>
+                        <div style="flex:1; background:#f0edf4; border-radius:99px; height:28px; position:relative; overflow:hidden;">
+                            <div style="height:28px; border-radius:99px; background:linear-gradient(90deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; width:{{ max($pct, 10) }}%;">
+                                <span style="font-size:0.75rem; font-weight:700; color:white;">{{ $qty }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+            @endif
+
             {{-- Una card por cada entrega --}}
             @foreach($consignments as $c)
             @php
@@ -655,5 +736,20 @@
     transition: width 0.4s ease;
     min-width: 4px;
 }
+
+.consign-report-wrap { margin-bottom: 40px; }
+
+.report-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.report-badge--blue   { background:#eff6ff; color:#1d4ed8; }
+.report-badge--purple { background:#faf5ff; color:#7e22ce; }
+.report-badge--gray   { background:#f5f5f5; color:#555; }
+.report-badge--green  { background:#f0fdf4; color:#15803d; }
+.report-badge--red    { background:#fef2f2; color:#b91c1c; }
 </style>
 @endpush

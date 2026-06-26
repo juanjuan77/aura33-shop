@@ -4,9 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ConsignmentResource\Pages;
 use App\Filament\Resources\ConsignmentResource\RelationManagers\PaymentsRelationManager;
+use App\Models\Category;
 use App\Models\Consignment;
 use App\Models\ConsignmentPayment;
 use App\Models\ConsignmentReport;
+use App\Models\Product;
 use App\Models\WholesaleRequest;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -29,7 +31,7 @@ class ConsignmentResource extends Resource
     {
         return $form->schema([
             Forms\Components\Section::make('Local / Mayorista')
-                ->columns(2)
+                ->columns(3)
                 ->schema([
                     Forms\Components\Select::make('wholesale_request_id')
                         ->label('Mayorista')
@@ -40,6 +42,10 @@ class ConsignmentResource extends Resource
                         ->label('Estado')
                         ->options(['active' => 'Activa', 'closed' => 'Cerrada'])
                         ->default('active')
+                        ->required(),
+                    Forms\Components\DatePicker::make('delivery_date')
+                        ->label('Fecha de entrega')
+                        ->default(now())
                         ->required(),
                     Forms\Components\Textarea::make('notes')
                         ->label('Notas')
@@ -102,10 +108,28 @@ class ConsignmentResource extends Resource
                         ->relationship('items')
                         ->label('')
                         ->schema([
-                            Forms\Components\TextInput::make('product_name')
+                            Forms\Components\Select::make('product_id')
                                 ->label('Producto')
+                                ->options(
+                                    Product::with('category')
+                                        ->orderBy('name')
+                                        ->get()
+                                        ->groupBy(fn($p) => $p->category?->name ?? 'Sin categoría')
+                                        ->map(fn($group) => $group->pluck('name', 'id'))
+                                        ->toArray()
+                                )
+                                ->searchable()
                                 ->required()
-                                ->placeholder('Botella Amatista'),
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    if ($state) {
+                                        $product = Product::find($state);
+                                        if ($product) {
+                                            $set('unit_price', $product->price_wholesale);
+                                            $set('product_name', $product->name);
+                                        }
+                                    }
+                                }),
                             Forms\Components\TextInput::make('quantity')
                                 ->label('Cantidad')
                                 ->numeric()
@@ -116,6 +140,7 @@ class ConsignmentResource extends Resource
                                 ->numeric()
                                 ->required()
                                 ->prefix('$'),
+                            Forms\Components\Hidden::make('product_name'),
                         ])
                         ->columns(3)
                         ->defaultItems(1)

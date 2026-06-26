@@ -127,7 +127,7 @@ class WholesaleController extends Controller
             ->get();
 
         $consignments = Consignment::where('wholesale_request_id', $wholesaler->id)
-            ->with(['items', 'payments'])
+            ->with(['items.product.category', 'payments'])
             ->latest()
             ->get();
 
@@ -143,9 +143,43 @@ class WholesaleController extends Controller
         $totalPaid      = $payments->sum('amount');
         $pendingBalance = $totalDebt - $totalPaid;
 
+        // Build per-product report
+        $reportByProduct = collect();
+        foreach ($consignments as $c) {
+            foreach ($c->items as $item) {
+                $pid = $item->product_id ?? ('manual_' . $item->id);
+                if (! $reportByProduct->has($pid)) {
+                    $reportByProduct[$pid] = [
+                        'product_name' => $item->product?->name ?? $item->product_name ?? '?',
+                        'category'     => $item->product?->category?->name ?? 'Sin categoría',
+                        'unit_price'   => $item->unit_price,
+                        'delivered'    => 0, 'sold' => 0, 'paid_qty' => 0,
+                    ];
+                }
+                $reportByProduct[$pid]['delivered'] += $item->quantity;
+
+                foreach ($c->payments as $pay) {
+                    $soldItems = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
+                    if (! is_array($soldItems)) continue;
+                    foreach ($soldItems as $s) {
+                        if ((int)($s['consignment_item_id'] ?? 0) === $item->id) {
+                            $reportByProduct[$pid]['sold']     += (int)($s['qty_sold'] ?? 0);
+                            $reportByProduct[$pid]['paid_qty'] += (int)($s['qty_paid'] ?? $s['qty_sold'] ?? 0);
+                        }
+                    }
+                }
+            }
+        }
+        $reportByProduct = $reportByProduct->map(function ($r) {
+            $r['stock']      = max(0, $r['delivered'] - $r['sold']);
+            $r['debe']       = max(0, $r['sold'] - $r['paid_qty']);
+            $r['debe_amount'] = $r['debe'] * $r['unit_price'];
+            return $r;
+        })->sortBy('category')->values();
+
         return view('shop.wholesale.portal', compact(
             'wholesaler', 'orders', 'consignments', 'reports', 'payments',
-            'totalDebt', 'totalPaid', 'pendingBalance'
+            'totalDebt', 'totalPaid', 'pendingBalance', 'reportByProduct'
         ));
     }
 

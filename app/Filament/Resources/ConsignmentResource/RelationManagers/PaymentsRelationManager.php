@@ -18,8 +18,9 @@ class PaymentsRelationManager extends RelationManager
         $consignment = $this->getOwnerRecord();
         $consignment->load('items');
 
+        $consignment->load('items.product');
         $itemOptions = $consignment->items->mapWithKeys(
-            fn($item) => [$item->id => "{$item->product_name} (entregados: {$item->quantity})"]
+            fn($item) => [$item->id => ($item->product?->name ?? $item->product_name) . " (entregados: {$item->quantity})"]
         )->toArray();
 
         return $form->schema([
@@ -34,12 +35,17 @@ class PaymentsRelationManager extends RelationManager
                                 ->required()
                                 ->reactive(),
                             Forms\Components\TextInput::make('qty_sold')
-                                ->label('Cantidad vendida')
+                                ->label('Vendidos')
                                 ->numeric()
                                 ->required()
                                 ->minValue(1),
+                            Forms\Components\TextInput::make('qty_paid')
+                                ->label('Pagados')
+                                ->numeric()
+                                ->minValue(0)
+                                ->helperText('Cuántos pagó (puede ser menos que vendidos)'),
                         ])
-                        ->columns(2)
+                        ->columns(3)
                         ->addActionLabel('+ Agregar producto vendido')
                         ->defaultItems(1),
                 ]),
@@ -85,15 +91,17 @@ class PaymentsRelationManager extends RelationManager
                         if (! $state) return '—';
                         $items = is_string($state) ? json_decode($state, true) : $state;
                         if (! is_array($items) || empty($items)) return '—';
-                        $record->load('consignment.items');
+                        $record->load('consignment.items.product');
                         $itemMap = $record->consignment?->items->keyBy('id') ?? collect();
                         $parts = collect($items)->map(function ($s) use ($itemMap) {
                             $id   = (int) ($s['consignment_item_id'] ?? 0);
                             $qty  = (int) ($s['qty_sold'] ?? 0);
                             if (! $id || ! $qty) return null;
-                            $name = $itemMap->has($id) ? $itemMap->get($id)->product_name : null;
-                            if (! $name) return null;
-                            return "{$name} ×{$qty}";
+                            $item = $itemMap->get($id);
+                            if (! $item) return null;
+                            $name = $item->product?->name ?? $item->product_name;
+                            $paid = isset($s['qty_paid']) ? " (pag: {$s['qty_paid']})" : '';
+                            return "{$name} ×{$qty}{$paid}";
                         })->filter()->values();
                         return $parts->isNotEmpty() ? $parts->join(' | ') : '—';
                     }),
