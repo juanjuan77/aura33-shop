@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Consignment;
+use App\Models\ConsignmentPayment;
+use App\Models\ConsignmentReport;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\WholesaleRequest;
@@ -123,7 +126,27 @@ class WholesaleController extends Controller
             ->latest()
             ->get();
 
-        return view('shop.wholesale.portal', compact('wholesaler', 'orders'));
+        $consignments = Consignment::where('wholesale_request_id', $wholesaler->id)
+            ->with('items')
+            ->latest()
+            ->get();
+
+        $reports = ConsignmentReport::where('wholesale_request_id', $wholesaler->id)
+            ->latest()
+            ->get();
+
+        $payments = ConsignmentPayment::where('wholesale_request_id', $wholesaler->id)
+            ->latest()
+            ->get();
+
+        $totalDebt    = $reports->where('status', 'confirmed')->sum('amount');
+        $totalPaid    = $payments->sum('amount');
+        $pendingBalance = $totalDebt - $totalPaid;
+
+        return view('shop.wholesale.portal', compact(
+            'wholesaler', 'orders', 'consignments', 'reports', 'payments',
+            'totalDebt', 'totalPaid', 'pendingBalance'
+        ));
     }
 
     private function getWholesaler(): ?WholesaleRequest

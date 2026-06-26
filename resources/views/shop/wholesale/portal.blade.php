@@ -141,6 +141,122 @@
             @endif
         </div>
 
+        {{-- ── CONSIGNACIONES ────────────────────────────── --}}
+        @if($consignments->isNotEmpty() || $reports->isNotEmpty())
+        <div style="margin-top: 60px;">
+            <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--brand); font-weight:400; margin-bottom:8px;">
+                Cuenta corriente consignación
+            </h2>
+            <p style="font-size:0.88rem; color:var(--muted); margin-bottom:28px;">
+                Productos entregados en tu local, ventas reportadas y saldo pendiente.
+            </p>
+
+            {{-- Resumen --}}
+            <div class="consign-summary-grid">
+                <div class="consign-summary-card">
+                    <span class="consign-summary-label">Ventas confirmadas</span>
+                    <span class="consign-summary-val">${{ number_format($totalDebt, 0, ',', '.') }}</span>
+                </div>
+                <div class="consign-summary-card">
+                    <span class="consign-summary-label">Total pagado</span>
+                    <span class="consign-summary-val consign-summary-val--paid">${{ number_format($totalPaid, 0, ',', '.') }}</span>
+                </div>
+                <div class="consign-summary-card {{ $pendingBalance > 0 ? 'consign-summary-card--pending' : 'consign-summary-card--ok' }}">
+                    <span class="consign-summary-label">Saldo pendiente</span>
+                    <span class="consign-summary-val consign-summary-val--{{ $pendingBalance > 0 ? 'pending' : 'ok' }}">
+                        ${{ number_format(abs($pendingBalance), 0, ',', '.') }}
+                        @if($pendingBalance <= 0) ✓ @endif
+                    </span>
+                </div>
+            </div>
+
+            {{-- Entregas --}}
+            @if($consignments->isNotEmpty())
+            <h3 class="consign-section-title">📦 Productos entregados</h3>
+            <div class="orders-table-wrap">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Productos</th>
+                            <th>Total entregado</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($consignments as $c)
+                        <tr>
+                            <td style="color:var(--muted); font-size:0.85rem;">{{ $c->created_at->format('d/m/Y') }}</td>
+                            <td style="font-size:0.85rem;">
+                                @foreach($c->items as $item)
+                                    <div>{{ $item->product_name }} × {{ $item->quantity }} — ${{ number_format($item->unit_price, 0, ',', '.') }} c/u</div>
+                                @endforeach
+                            </td>
+                            <td style="font-weight:600; color:var(--brand);">${{ number_format($c->totalDelivered(), 0, ',', '.') }}</td>
+                            <td>
+                                <span style="background:{{ $c->status === 'active' ? '#f0fdf4' : '#f5f5f5' }}; color:{{ $c->status === 'active' ? '#15803d' : '#666' }}; padding:3px 10px; border-radius:50px; font-size:0.75rem; font-weight:600;">
+                                    {{ $c->status === 'active' ? 'Activa' : 'Cerrada' }}
+                                </span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
+            {{-- Reportes de ventas --}}
+            @if($reports->isNotEmpty())
+            <h3 class="consign-section-title" style="margin-top:32px;">📋 Reportes de ventas</h3>
+            <div class="orders-table-wrap">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Descripción</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($reports as $r)
+                        <tr>
+                            <td style="color:var(--muted); font-size:0.85rem;">{{ $r->created_at->format('d/m/Y') }}</td>
+                            <td style="font-size:0.85rem;">{{ $r->description }}</td>
+                            <td style="font-weight:600; color:var(--brand);">${{ number_format($r->amount, 0, ',', '.') }}</td>
+                            <td>
+                                @php $rc = match($r->status) { 'confirmed'=>['#f0fdf4','#15803d','Confirmado'], 'rejected'=>['#fef2f2','#b91c1c','Rechazado'], default=>['#fefce8','#a16207','Pendiente'] }; @endphp
+                                <span style="background:{{ $rc[0] }}; color:{{ $rc[1] }}; padding:3px 10px; border-radius:50px; font-size:0.75rem; font-weight:600;">{{ $rc[2] }}</span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
+            {{-- Pagos --}}
+            @if($payments->isNotEmpty())
+            <h3 class="consign-section-title" style="margin-top:32px;">💳 Pagos registrados</h3>
+            <div class="orders-table-wrap">
+                <table class="orders-table">
+                    <thead><tr><th>Fecha</th><th>Notas</th><th>Monto</th></tr></thead>
+                    <tbody>
+                        @foreach($payments as $p)
+                        <tr>
+                            <td style="color:var(--muted); font-size:0.85rem;">{{ $p->created_at->format('d/m/Y') }}</td>
+                            <td style="font-size:0.85rem;">{{ $p->notes ?: '—' }}</td>
+                            <td style="font-weight:600; color:#15803d;">${{ number_format($p->amount, 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
+        </div>
+        @endif
+
     </div>
 </div>
 @endsection
@@ -321,6 +437,52 @@
     font-size: 0.9rem;
     color: var(--brand);
     font-weight: 500;
+}
+
+.consign-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+@media (max-width: 600px) { .consign-summary-grid { grid-template-columns: 1fr; } }
+
+.consign-summary-card {
+    background: var(--white);
+    border: 1px solid rgba(74,59,82,0.08);
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.consign-summary-card--pending { border-color: rgba(180,60,60,0.15); background: #fff8f8; }
+.consign-summary-card--ok      { border-color: rgba(60,160,60,0.15); background: #f8fff8; }
+
+.consign-summary-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+}
+.consign-summary-val {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--brand);
+    font-weight: 400;
+}
+.consign-summary-val--paid    { color: #15803d; }
+.consign-summary-val--pending { color: #b91c1c; }
+.consign-summary-val--ok      { color: #15803d; }
+
+.consign-section-title {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--brand);
+    font-weight: 400;
+    margin-bottom: 14px;
 }
 </style>
 @endpush
