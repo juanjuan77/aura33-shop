@@ -78,7 +78,7 @@ class CartController extends Controller
 
         // Bloquear checkout mayorista si hay menos de 10 unidades
         if ($type === 'wholesale') {
-            $totalUnits = array_sum(array_column($cart, 'quantity'));
+            $totalUnits = array_sum($cart);
             if ($totalUnits < 10) {
                 return redirect()->route('cart')->with('error', 'El pedido mayorista requiere un mínimo de 10 unidades. Tu carrito tiene ' . $totalUnits . ' unidad' . ($totalUnits == 1 ? '' : 'es') . '.');
             }
@@ -115,7 +115,7 @@ class CartController extends Controller
 
         // Mínimo 10 unidades para pedidos mayoristas
         if ($type === 'wholesale') {
-            $totalUnits = array_sum(array_column($cart, 'quantity'));
+            $totalUnits = array_sum($cart);
             if ($totalUnits < 10) {
                 return back()->with('error', 'El pedido mayorista requiere un mínimo de 10 unidades. Tu carrito tiene ' . $totalUnits . ' unidad' . ($totalUnits == 1 ? '' : 'es') . '.');
             }
