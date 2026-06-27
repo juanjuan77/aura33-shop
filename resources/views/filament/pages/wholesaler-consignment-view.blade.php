@@ -55,7 +55,7 @@
 </div>
 
 {{-- Tabla de entregas --}}
-<div class="wc-section-title">📦 Entregas — clic en "Editar" para cargar pagos</div>
+<div class="wc-section-title">📦 Entregas registradas</div>
 
 @if($consignments->isEmpty())
     <p style="color:#aaa; font-size:0.85rem; padding:20px 0;">No hay entregas. Usá "+ Nueva entrega" para registrar la primera.</p>
@@ -69,7 +69,6 @@
                 <th style="text-align:right;">Total entregado</th>
                 <th style="text-align:right;">Cobrado</th>
                 <th style="text-align:center;">Estado</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -104,10 +103,6 @@
                             <span class="wc-badge-ok">✓</span>
                         @endif
                     </div>
-                </td>
-                <td style="text-align:right;">
-                    <a href="{{ \App\Filament\Resources\ConsignmentResource::getUrl('edit', ['record' => $c->id]) }}"
-                       class="wc-edit-btn">✏️ Editar / Pagos</a>
                 </td>
             </tr>
             @endforeach
