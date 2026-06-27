@@ -279,7 +279,7 @@ class WholesaleController extends Controller
         ]);
 
         if (! Hash::check($request->current_password, $wholesaler->password)) {
-            return back()->withErrors(['current_password' => 'La contraseña actual es incorrecta.'])->withFragment('cambiar-clave');
+            return back()->withErrors(['current_password' => 'La contraseña actual es incorrecta.'])->with('show_password_form', true);
         }
 
         $wholesaler->update(['password' => Hash::make($request->password)]);

@@ -23,10 +23,44 @@
                 <a href="{{ route('shop') }}" class="btn">
                     Hacer un pedido
                 </a>
-                <form method="POST" action="{{ route('wholesale.logout') }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn-outline-muted">Salir</button>
-                </form>
+                <div class="profile-dropdown-wrap">
+                    <button class="profile-dropdown-trigger btn-outline-muted" onclick="toggleProfileMenu()" type="button">
+                        👤 {{ $wholesaler->name }}
+                    </button>
+                    <div class="profile-dropdown-menu" id="profileMenu">
+                        <div class="profile-dropdown-name">{{ $wholesaler->email }}</div>
+                        <div class="profile-dropdown-divider"></div>
+
+                        {{-- Cambiar contraseña --}}
+                        @if($errors->has('current_password') || session('show_password_form'))
+                        <div class="profile-pw-form" id="profilePwForm" style="display:block;">
+                        @else
+                        <div class="profile-pw-form" id="profilePwForm" style="display:none;">
+                        @endif
+                            @if($errors->has('current_password'))
+                                <p class="profile-pw-error">{{ $errors->first('current_password') }}</p>
+                            @endif
+                            @if($errors->has('password'))
+                                <p class="profile-pw-error">{{ $errors->first('password') }}</p>
+                            @endif
+                            <form method="POST" action="{{ route('wholesale.change-password') }}">
+                                @csrf
+                                <input type="password" name="current_password" placeholder="Contraseña actual" required class="profile-pw-input">
+                                <input type="password" name="password" placeholder="Nueva contraseña" required minlength="6" class="profile-pw-input">
+                                <input type="password" name="password_confirmation" placeholder="Confirmar nueva" required minlength="6" class="profile-pw-input">
+                                <button type="submit" class="profile-pw-btn">Guardar</button>
+                            </form>
+                        </div>
+
+                        <button class="profile-dropdown-item" onclick="togglePwForm()" type="button">🔑 Cambiar contraseña</button>
+
+                        <div class="profile-dropdown-divider"></div>
+                        <form method="POST" action="{{ route('wholesale.logout') }}">
+                            @csrf
+                            <button type="submit" class="profile-dropdown-item profile-dropdown-item--danger">Cerrar sesión</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -144,39 +178,6 @@
             </div>
             @endif
             @endif
-        </div>
-
-        {{-- ── CAMBIAR CONTRASEÑA ───────────────────────── --}}
-        <div id="cambiar-clave" style="margin-top:50px;">
-            <h2 style="font-family:var(--font-serif); font-size:1.4rem; color:var(--brand); font-weight:400; margin-bottom:20px;">
-                Cambiar contraseña
-            </h2>
-            <div style="background:var(--white); border:1px solid var(--border); border-radius:16px; padding:28px 32px; max-width:440px; box-shadow:var(--shadow-soft);">
-                @if($errors->has('current_password'))
-                    <div class="portal-alert-error" style="margin-bottom:16px;">{{ $errors->first('current_password') }}</div>
-                @endif
-                <form method="POST" action="{{ route('wholesale.change-password') }}">
-                    @csrf
-                    <div style="display:flex; flex-direction:column; gap:16px;">
-                        <div>
-                            <label style="font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:block; margin-bottom:6px;">Contraseña actual</label>
-                            <input type="password" name="current_password" required
-                                style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--font-sans); font-size:0.9rem; outline:none; box-sizing:border-box;">
-                        </div>
-                        <div>
-                            <label style="font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:block; margin-bottom:6px;">Nueva contraseña</label>
-                            <input type="password" name="password" required minlength="6"
-                                style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--font-sans); font-size:0.9rem; outline:none; box-sizing:border-box;">
-                        </div>
-                        <div>
-                            <label style="font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:block; margin-bottom:6px;">Confirmar nueva contraseña</label>
-                            <input type="password" name="password_confirmation" required minlength="6"
-                                style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--font-sans); font-size:0.9rem; outline:none; box-sizing:border-box;">
-                        </div>
-                        <button type="submit" class="btn" style="align-self:flex-start;">Guardar nueva contraseña</button>
-                    </div>
-                </form>
-            </div>
         </div>
 
         {{-- ── CONSIGNACIONES ────────────────────────────── --}}
@@ -893,5 +894,103 @@
     transition: background 0.2s;
 }
 .rp-receipt-btn:hover { background: #f3e8ff; color: #6b21a8; }
+
+/* ── Profile dropdown ── */
+.profile-dropdown-wrap { position: relative; }
+.profile-dropdown-trigger { cursor: pointer; white-space: nowrap; }
+.profile-dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(74,59,82,0.13);
+    min-width: 260px;
+    z-index: 200;
+    overflow: hidden;
+}
+.profile-dropdown-menu.open { display: block; }
+.profile-dropdown-name {
+    padding: 12px 16px 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+.profile-dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
+.profile-dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    color: var(--brand);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: background 0.15s;
+}
+.profile-dropdown-item:hover { background: rgba(74,59,82,0.05); }
+.profile-dropdown-item--danger { color: #b91c1c; }
+.profile-dropdown-item--danger:hover { background: #fff5f5; }
+.profile-pw-form { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.profile-pw-input {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: var(--font-sans);
+    outline: none;
+    box-sizing: border-box;
+    color: var(--brand);
+}
+.profile-pw-input:focus { border-color: var(--brand); }
+.profile-pw-btn {
+    width: 100%;
+    padding: 8px;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: opacity 0.2s;
+}
+.profile-pw-btn:hover { opacity: 0.85; }
+.profile-pw-error {
+    font-size: 0.8rem;
+    color: #b91c1c;
+    margin: 0 0 8px;
+}
 </style>
+<script>
+function toggleProfileMenu() {
+    document.getElementById('profileMenu').classList.toggle('open');
+}
+function togglePwForm() {
+    var f = document.getElementById('profilePwForm');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+    var wrap = document.querySelector('.profile-dropdown-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+        document.getElementById('profileMenu').classList.remove('open');
+    }
+});
+@if($errors->any() || session('show_password_form'))
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('profileMenu').classList.add('open');
+});
+@endif
+</script>
 @endpush
