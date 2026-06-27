@@ -7,6 +7,7 @@ use App\Models\Consignment;
 use App\Models\ConsignmentItem;
 use App\Models\ConsignmentPayment;
 use App\Models\WholesaleRequest;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
 
@@ -22,6 +23,28 @@ class ConsignmentReport extends Page
     public ?int    $selectedCategory   = null;
     public ?int    $detailProductId    = null;
     public bool    $showDetail         = false;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('export_pdf')
+                ->label('📄 PDF')
+                ->color('gray')
+                ->url(fn() => $this->selectedWholesaler
+                    ? route('export.consignment.pdf', ['wholesaler' => $this->selectedWholesaler])
+                    : null)
+                ->openUrlInNewTab()
+                ->disabled(fn() => ! $this->selectedWholesaler),
+
+            Action::make('export_csv')
+                ->label('📊 Excel/CSV')
+                ->color('success')
+                ->url(fn() => $this->selectedWholesaler
+                    ? route('export.consignment.csv', ['wholesaler' => $this->selectedWholesaler])
+                    : null)
+                ->disabled(fn() => ! $this->selectedWholesaler),
+        ];
+    }
 
     public function getWholesalers(): Collection
     {

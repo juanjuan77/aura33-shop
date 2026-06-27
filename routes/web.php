@@ -4,6 +4,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CrystalAdvisorController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StockAlertController;
+use App\Http\Controllers\ConsignmentExportController;
 use App\Http\Controllers\WholesaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,10 @@ Route::get('/mayoristas/ingresar', [WholesaleController::class, 'loginForm'])->n
 Route::post('/mayoristas/ingresar', [WholesaleController::class, 'login'])->name('wholesale.login.post');
 Route::post('/mayoristas/salir', [WholesaleController::class, 'logout'])->name('wholesale.logout');
 Route::get('/mayoristas/panel', [WholesaleController::class, 'portal'])->name('wholesale.portal');
+
+// Exportaciones admin (protegidas por middleware Filament)
+Route::get('/a33mgr/export/consignment-pdf', [ConsignmentExportController::class, 'pdf'])->name('export.consignment.pdf');
+Route::get('/a33mgr/export/consignment-csv', [ConsignmentExportController::class, 'csv'])->name('export.consignment.csv');
 
 // Calcular envío
 Route::post('/shipping/calculate', [CartController::class, 'calculateShipping'])->name('shipping.calculate');

@@ -240,6 +240,56 @@
             </div>
             @endif
 
+            {{-- HISTORIAL DE ENTREGAS --}}
+            <div class="cp-section">
+                <div class="cp-section-title">🚚 Historial de entregas</div>
+                @php $consignmentsSorted = $consignments->sortByDesc('delivery_date'); @endphp
+                @if($consignmentsSorted->isEmpty())
+                    <p style="color:var(--muted); font-size:0.85rem; padding:16px 0;">Sin entregas registradas todavía.</p>
+                @else
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    @foreach($consignmentsSorted as $c)
+                    <div style="background:var(--white); border:1px solid var(--border); border-radius:12px; padding:16px 20px; display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+                        <div style="min-width:90px;">
+                            <div style="font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em;">Fecha</div>
+                            <div style="font-weight:700; color:var(--brand); font-size:0.9rem; margin-top:2px;">
+                                {{ ($c->delivery_date ?? $c->created_at)->format('d/m/Y') }}
+                            </div>
+                            <div style="margin-top:6px;">
+                                <span style="font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:50px;
+                                    background:{{ $c->status==='active' ? '#f0fdf4' : '#f5f5f5' }};
+                                    color:{{ $c->status==='active' ? '#15803d' : '#666' }};
+                                    border:1px solid {{ $c->status==='active' ? '#bbf7d0' : '#e5e5e5' }};">
+                                    {{ $c->status==='active' ? 'Activa' : 'Cerrada' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="flex:1; min-width:200px;">
+                            <div style="font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px;">Productos enviados</div>
+                            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                @foreach($c->items as $item)
+                                <span style="background:#f0f0ff; color:#4338ca; border:1px solid #c7d2fe; font-size:0.78rem; font-weight:600; padding:3px 10px; border-radius:50px;">
+                                    {{ $item->product?->name ?? $item->product_name }} ×{{ $item->quantity }}
+                                </span>
+                                @endforeach
+                            </div>
+                            @if($c->notes)
+                            <div style="font-size:0.75rem; color:var(--muted); margin-top:6px;">📝 {{ $c->notes }}</div>
+                            @endif
+                        </div>
+                        <div style="text-align:right; min-width:110px;">
+                            <div style="font-size:0.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em;">Total</div>
+                            <div style="font-weight:800; color:var(--brand); font-size:1rem; margin-top:2px;">
+                                ${{ number_format($c->items->sum(fn($i) => $i->quantity * $i->unit_price), 0, ',', '.') }}
+                            </div>
+                            <div style="font-size:0.72rem; color:var(--muted); margin-top:2px;">{{ $c->items->sum('quantity') }} unidades</div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+
             {{-- 3. MIS PAGOS --}}
             <div class="cp-section">
                 <div class="cp-section-title">💳 Mis pagos realizados</div>
