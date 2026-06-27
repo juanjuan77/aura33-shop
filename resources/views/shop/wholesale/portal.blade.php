@@ -261,10 +261,16 @@
                                             $sid  = (int)($s['consignment_item_id'] ?? 0);
                                             $item = $globalItemMap->get($sid);
                                             $name = $item ? ($item->product?->name ?? $item->product_name) : null;
-                                            $qty  = $s['qty_sold'] ?? 0;
+                                            $qty_sold = (int)($s['qty_sold'] ?? 0);
+                                            $qty_paid = (int)($s['qty_paid'] ?? 0);
                                         @endphp
-                                        @if($name && $qty)
-                                        <span class="rp-tag">{{ $name }} ×{{ $qty }}</span>
+                                        @if($name && $qty_sold)
+                                        <span class="rp-tag">
+                                            {{ $name }} ×{{ $qty_sold }}
+                                            @if($qty_paid < $qty_sold)
+                                                <span style="color:#b45309; font-weight:700;"> — pagó {{ $qty_paid }}, debe {{ $qty_sold - $qty_paid }}</span>
+                                            @endif
+                                        </span>
                                         @endif
                                         @endforeach
                                     </div>
