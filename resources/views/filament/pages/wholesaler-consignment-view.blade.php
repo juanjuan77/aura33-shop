@@ -24,24 +24,22 @@
     font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em;
     color:#999; padding:6px 14px 10px; border-bottom:1px solid #ede9f5; text-align:left;
 }
-.wc-table td { padding:12px 14px; border-bottom:1px solid rgba(124,58,237,0.05); color:#3b1f6e; }
+.wc-table td { padding:12px 14px; border-bottom:1px solid rgba(124,58,237,0.05); color:#3b1f6e; vertical-align:top; }
 .wc-table tr:last-child td { border-bottom:none; }
 .wc-table tr:hover td { background:#faf8ff; }
-.wc-edit-btn {
-    font-size:0.72rem; color:#7c3aed; padding:4px 12px;
-    border:1px solid #ddd6fe; border-radius:50px;
-    text-decoration:none; white-space:nowrap;
-    transition: background 0.15s;
-}
-.wc-edit-btn:hover { background:#f3e8ff; }
-.wc-badge-active { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:50px; }
-.wc-badge-closed { background:#f5f5f5; color:#666; border:1px solid #e5e5e5; font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:50px; }
-.wc-badge-debe   { background:#fff5f5; color:#b91c1c; border:1px solid #fecaca; font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:50px; }
-.wc-badge-ok     { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:50px; }
+.wc-pay-tag { display:inline-block; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:50px; margin:2px 2px 2px 0; }
+.wc-receipt-btn { display:inline-block; background:#f3e8ff; color:#7c3aed; border:1px solid #ddd6fe; font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:50px; text-decoration:none; }
+.wc-receipt-btn:hover { background:#ede9fe; }
 </style>
 
 @php
-    $consignments = $this->getConsignments();
+    $payments = \App\Models\ConsignmentPayment::where('wholesale_request_id', $this->record->id)
+        ->orderByDesc('created_at')
+        ->get();
+    $allItems = \App\Models\ConsignmentItem::whereHas('consignment', fn($q) =>
+            $q->where('wholesale_request_id', $this->record->id)
+        )->with('product')->get()->keyBy('id');
+    $totalPagado = $payments->sum('amount');
 @endphp
 
 {{-- Header del local --}}
@@ -54,59 +52,69 @@
        style="font-size:0.78rem; color:#a78bfa; text-decoration:none;">← Todos los locales</a>
 </div>
 
-{{-- Tabla de entregas --}}
-<div class="wc-section-title">📦 Entregas registradas</div>
+{{-- Pagos --}}
+<div class="wc-section-title">💳 Pagos registrados</div>
 
-@if($consignments->isEmpty())
-    <p style="color:#aaa; font-size:0.85rem; padding:20px 0;">No hay entregas. Usá "+ Nueva entrega" para registrar la primera.</p>
+@if($payments->isEmpty())
+    <p style="color:#aaa; font-size:0.85rem; padding:20px 0;">Sin pagos registrados todavía. Usá "💳 Registrar pago" para agregar uno.</p>
 @else
 <div style="background:white; border:1px solid #ede9f5; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(124,58,237,0.05);">
     <table class="wc-table">
         <thead>
             <tr>
-                <th>Fecha entrega</th>
-                <th>Productos</th>
-                <th style="text-align:right;">Total entregado</th>
-                <th style="text-align:right;">Cobrado</th>
-                <th style="text-align:center;">Estado</th>
+                <th>Fecha</th>
+                <th>Productos vendidos</th>
+                <th style="text-align:right;">Monto</th>
+                <th>Comprobante</th>
+                <th>Notas</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($consignments as $c)
+            @foreach($payments as $pay)
             @php
-                $cEntregado = $c->items->sum(fn($i) => $i->quantity * $i->unit_price);
-                $cCobrado   = $c->payments->sum('amount');
-                $cSaldo     = $cEntregado - $cCobrado;
+                $sold = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
             @endphp
             <tr>
-                <td style="font-weight:700; white-space:nowrap;">
-                    {{ $c->delivery_date?->format('d/m/Y') ?? $c->created_at->format('d/m/Y') }}
-                    @if($c->notes)
-                    <div style="font-size:0.72rem; color:#a78bfa; margin-top:2px;">{{ $c->notes }}</div>
+                <td style="white-space:nowrap; font-weight:700;">{{ $pay->created_at->format('d/m/Y') }}</td>
+                <td>
+                    @if(is_array($sold) && count($sold))
+                        @foreach($sold as $s)
+                        @php
+                            $sid  = (int)($s['consignment_item_id'] ?? 0);
+                            $item = $allItems->get($sid);
+                            $name = $item ? ($item->product?->name ?? $item->product_name) : '?';
+                            $qty  = $s['qty_sold'] ?? 0;
+                            $qp   = $s['qty_paid'] ?? $qty;
+                        @endphp
+                        <span class="wc-pay-tag">
+                            {{ $name }} ×{{ $qty }}{{ $qp < $qty ? ' (paga '.($qp).')' : '' }}
+                        </span>
+                        @endforeach
+                    @else
+                        <span style="color:#ccc;">—</span>
                     @endif
                 </td>
-                <td style="font-size:0.8rem; color:#555;">
-                    @foreach($c->items as $item)
-                        <div>{{ $item->product?->name ?? $item->product_name }} ×{{ $item->quantity }}</div>
-                    @endforeach
+                <td style="text-align:right; font-weight:800; color:#15803d; font-size:1rem; white-space:nowrap;">
+                    ${{ number_format($pay->amount, 0, ',', '.') }}
                 </td>
-                <td style="text-align:right; font-weight:700;">${{ number_format($cEntregado,0,',','.') }}</td>
-                <td style="text-align:right; color:#15803d; font-weight:700;">${{ number_format($cCobrado,0,',','.') }}</td>
-                <td style="text-align:center;">
-                    <div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">
-                        <span class="{{ $c->status==='active' ? 'wc-badge-active' : 'wc-badge-closed' }}">
-                            {{ $c->status==='active' ? 'Activa' : 'Cerrada' }}
-                        </span>
-                        @if($cSaldo > 0)
-                            <span class="wc-badge-debe">Debe ${{ number_format($cSaldo,0,',','.') }}</span>
-                        @else
-                            <span class="wc-badge-ok">✓</span>
-                        @endif
-                    </div>
+                <td>
+                    @if($pay->receipt)
+                        <a href="/storage/{{ $pay->receipt }}" target="_blank" class="wc-receipt-btn">Ver 📎</a>
+                    @else
+                        <span style="color:#ccc; font-size:0.78rem;">Sin comprobante</span>
+                    @endif
                 </td>
+                <td style="font-size:0.8rem; color:#888;">{{ $pay->notes ?: '—' }}</td>
             </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr style="background:#faf8ff;">
+                <td colspan="2" style="padding:14px; font-weight:800; color:#3b1f6e;">TOTAL COBRADO</td>
+                <td style="text-align:right; font-weight:800; color:#15803d; font-size:1.05rem; padding:14px;">${{ number_format($totalPagado, 0, ',', '.') }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
     </table>
 </div>
 @endif
