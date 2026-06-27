@@ -143,31 +143,38 @@ class WholesaleController extends Controller
         $totalPaid      = $payments->sum('amount');
         $pendingBalance = $totalDebt - $totalPaid;
 
-        // Build per-product report
+        // Build per-product report usando TODOS los pagos del mayorista
         $reportMap = [];
-        foreach ($consignments as $c) {
-            foreach ($c->items as $item) {
-                $pid = $item->product_id ?? ('manual_' . $item->id);
-                if (! isset($reportMap[$pid])) {
-                    $reportMap[$pid] = [
-                        'product_name' => $item->product?->name ?? $item->product_name ?? '?',
-                        'category'     => $item->product?->category?->name ?? 'Sin categoría',
-                        'unit_price'   => $item->unit_price,
-                        'delivered'    => 0, 'sold' => 0, 'paid_qty' => 0,
-                    ];
-                }
-                $reportMap[$pid]['delivered'] += $item->quantity;
+        $allItems  = $consignments->flatMap(fn($c) => $c->items);
 
-                foreach ($c->payments as $pay) {
-                    $soldItems = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
-                    if (! is_array($soldItems)) continue;
-                    foreach ($soldItems as $s) {
-                        if ((int)($s['consignment_item_id'] ?? 0) === $item->id) {
-                            $reportMap[$pid]['sold']     += (int)($s['qty_sold'] ?? 0);
-                            $reportMap[$pid]['paid_qty'] += (int)($s['qty_paid'] ?? $s['qty_sold'] ?? 0);
-                        }
+        foreach ($allItems as $item) {
+            $pid = $item->product_id ?? ('manual_' . $item->id);
+            if (! isset($reportMap[$pid])) {
+                $reportMap[$pid] = [
+                    'product_name' => $item->product?->name ?? $item->product_name ?? '?',
+                    'category'     => $item->product?->category?->name ?? 'Sin categoría',
+                    'unit_price'   => $item->unit_price,
+                    'delivered'    => 0, 'sold' => 0, 'paid_qty' => 0,
+                    '_item_ids'    => [],
+                ];
+            }
+            $reportMap[$pid]['delivered']  += $item->quantity;
+            $reportMap[$pid]['_item_ids'][] = $item->id;
+        }
+
+        foreach ($payments as $pay) {
+            $soldItems = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
+            if (! is_array($soldItems)) continue;
+            foreach ($soldItems as $s) {
+                $sid = (int)($s['consignment_item_id'] ?? 0);
+                foreach ($reportMap as $pid => &$row) {
+                    if (in_array($sid, $row['_item_ids'])) {
+                        $row['sold']     += (int)($s['qty_sold'] ?? 0);
+                        $row['paid_qty'] += (int)($s['qty_paid'] ?? $s['qty_sold'] ?? 0);
+                        break;
                     }
                 }
+                unset($row);
             }
         }
         $reportByProduct = collect($reportMap)->map(function ($r) {

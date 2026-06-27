@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Category;
 use App\Models\Consignment;
 use App\Models\ConsignmentItem;
+use App\Models\ConsignmentPayment;
 use App\Models\WholesaleRequest;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
@@ -86,7 +87,7 @@ class ConsignmentReport extends Page
     {
         if (! $this->selectedWholesaler) return collect();
 
-        $query = ConsignmentItem::with(['product.category', 'consignment.payments'])
+        $query = ConsignmentItem::with(['product.category'])
             ->whereHas('consignment', fn($q) => $q->where('wholesale_request_id', $this->selectedWholesaler));
 
         if ($this->selectedCategory) {
@@ -95,31 +96,36 @@ class ConsignmentReport extends Page
 
         $items = $query->get();
 
-        // Group by product
-        return $items->groupBy('product_id')->map(function ($rows) {
-            $first      = $rows->first();
-            $product    = $first->product;
-            $category   = $product?->category?->name ?? 'Sin categoría';
-            $delivered  = $rows->sum('quantity');
+        // Cargar TODOS los pagos del mayorista (con o sin consignment_id)
+        $allPayments = ConsignmentPayment::where('wholesale_request_id', $this->selectedWholesaler)->get();
+        $itemIds = $items->pluck('id')->flip(); // id => index para búsqueda O(1)
 
-            // All payments for these consignment items
-            $allSold = 0;
-            $allPaid = 0;
-
-            foreach ($rows as $row) {
-                foreach ($row->consignment->payments as $payment) {
-                    $soldItems = is_string($payment->items_sold)
-                        ? json_decode($payment->items_sold, true)
-                        : $payment->items_sold;
-                    if (! is_array($soldItems)) continue;
-                    foreach ($soldItems as $s) {
-                        if ((int)($s['consignment_item_id'] ?? 0) === $row->id) {
-                            $allSold += (int)($s['qty_sold'] ?? 0);
-                            $allPaid += (int)($s['qty_paid'] ?? $s['qty_sold'] ?? 0);
-                        }
-                    }
+        // Pre-calcular sold/paid por item_id desde todos los pagos
+        $soldMap = [];
+        $paidMap = [];
+        foreach ($allPayments as $payment) {
+            $soldItems = is_string($payment->items_sold)
+                ? json_decode($payment->items_sold, true)
+                : $payment->items_sold;
+            if (! is_array($soldItems)) continue;
+            foreach ($soldItems as $s) {
+                $id = (int)($s['consignment_item_id'] ?? 0);
+                if ($itemIds->has($id)) {
+                    $soldMap[$id] = ($soldMap[$id] ?? 0) + (int)($s['qty_sold'] ?? 0);
+                    $paidMap[$id] = ($paidMap[$id] ?? 0) + (int)($s['qty_paid'] ?? $s['qty_sold'] ?? 0);
                 }
             }
+        }
+
+        // Group by product
+        return $items->groupBy('product_id')->map(function ($rows) use ($soldMap, $paidMap) {
+            $first     = $rows->first();
+            $product   = $first->product;
+            $category  = $product?->category?->name ?? 'Sin categoría';
+            $delivered = $rows->sum('quantity');
+
+            $allSold = $rows->sum(fn($r) => $soldMap[$r->id] ?? 0);
+            $allPaid = $rows->sum(fn($r) => $paidMap[$r->id] ?? 0);
 
             $stock = max(0, $delivered - $allSold);
             $debe  = max(0, $allSold - $allPaid);
