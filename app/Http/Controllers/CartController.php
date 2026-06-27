@@ -75,6 +75,15 @@ class CartController extends Controller
         }
         $wholesaler = session('wholesale_user') ? WholesaleRequest::find(session('wholesale_user')) : null;
         $type       = $wholesaler ? 'wholesale' : 'retail';
+
+        // Bloquear checkout mayorista si hay menos de 10 unidades
+        if ($type === 'wholesale') {
+            $totalUnits = array_sum(array_column($cart, 'quantity'));
+            if ($totalUnits < 10) {
+                return redirect()->route('cart')->with('error', 'El pedido mayorista requiere un mínimo de 10 unidades. Tu carrito tiene ' . $totalUnits . ' unidad' . ($totalUnits == 1 ? '' : 'es') . '.');
+            }
+        }
+
         $items      = $this->resolveCartItems($cart);
         $totals     = $this->calculateTotals($items, $cart, $type);
         $bankData   = $this->bankData();
@@ -103,6 +112,14 @@ class CartController extends Controller
         $wholesaler = session('wholesale_user') ? WholesaleRequest::find(session('wholesale_user')) : null;
         $type       = $wholesaler ? 'wholesale' : 'retail';
         $items      = $this->resolveCartItems($cart);
+
+        // Mínimo 10 unidades para pedidos mayoristas
+        if ($type === 'wholesale') {
+            $totalUnits = array_sum(array_column($cart, 'quantity'));
+            if ($totalUnits < 10) {
+                return back()->with('error', 'El pedido mayorista requiere un mínimo de 10 unidades. Tu carrito tiene ' . $totalUnits . ' unidad' . ($totalUnits == 1 ? '' : 'es') . '.');
+            }
+        }
         $totals     = $this->calculateTotals($items, $cart, $type, $request->shipping_province);
 
         // Cupón de descuento
