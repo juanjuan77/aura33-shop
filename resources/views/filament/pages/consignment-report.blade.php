@@ -539,62 +539,73 @@
             </div>
             @endif
 
-            {{-- Tabla por entrega --}}
-            <div style="overflow-x:auto;">
+            {{-- Sección 1: Entregas (solo qué se mandó y cuándo) --}}
+            <div style="padding:20px 28px; border-bottom:1px solid #ede9f5;">
+                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#7c3aed; margin-bottom:12px;">📦 Historial de entregas</div>
                 <table class="cr-table" style="font-size:0.82rem;">
                     <thead>
                         <tr>
-                            <th style="text-align:left; color:#7c3aed;">Fecha entrega</th>
-                            <th class="th-blue">Cant.</th>
-                            <th style="color:#555;">Precio u.</th>
-                            <th style="color:#555;">Subtotal</th>
-                            <th class="th-purple">Vendidos</th>
-                            <th class="th-green">Pagados</th>
-                            <th class="th-red">Debe</th>
-                            <th class="th-gray">Stock</th>
-                            <th style="text-align:left; color:#999;">Estado</th>
+                            <th style="text-align:left; color:#7c3aed;">Fecha</th>
+                            <th class="th-blue">Unidades enviadas</th>
+                            <th style="color:#555;">Precio unit.</th>
+                            <th style="color:#555; text-align:right;">Valor entregado</th>
+                            <th style="color:#999;">Notas</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($detail as $d)
                         <tr>
-                            <td style="font-weight:600; color:#3b1f6e;">{{ $d['delivery_date'] }}</td>
+                            <td style="font-weight:700; color:#3b1f6e;">{{ $d['delivery_date'] }}</td>
                             <td style="text-align:center;"><span class="cr-badge cr-badge--blue">{{ $d['quantity'] }}</span></td>
                             <td style="text-align:center; color:#555;">${{ number_format($d['unit_price'], 0, ',', '.') }}</td>
-                            <td style="text-align:center; color:#555;">${{ number_format($d['subtotal'], 0, ',', '.') }}</td>
-                            <td style="text-align:center;"><span class="cr-badge cr-badge--purple">{{ $d['sold'] }}</span></td>
-                            <td style="text-align:center;"><span class="cr-badge cr-badge--green">{{ $d['paid'] }}</span></td>
-                            <td style="text-align:center;">
-                                @if($d['debe'] > 0) <span class="cr-badge cr-badge--red">{{ $d['debe'] }}</span>
-                                @else <span class="cr-ok">✓</span> @endif
-                            </td>
-                            <td style="text-align:center;"><span class="cr-badge cr-badge--gray">{{ $d['stock'] }}</span></td>
-                            <td>
-                                <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:50px; background:{{ $d['status']==='active' ? '#f0fdf4' : '#f5f5f5' }}; color:{{ $d['status']==='active' ? '#15803d' : '#666' }};">
-                                    {{ $d['status'] === 'active' ? 'Activa' : 'Cerrada' }}
-                                </span>
-                            </td>
+                            <td style="text-align:right; font-weight:700; color:#3b1f6e;">${{ number_format($d['subtotal'], 0, ',', '.') }}</td>
+                            <td style="color:#aaa; font-size:0.75rem;">{{ $d['notes'] ?? '—' }}</td>
                         </tr>
-                        @if($d['notes'])
-                        <tr><td colspan="9" style="font-size:0.72rem; color:#999; padding-top:0; padding-left:16px;">📝 {{ $d['notes'] }}</td></tr>
-                        @endif
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td style="font-weight:800; color:#7c3aed;">TOTAL</td>
+                            <td style="font-weight:800; color:#7c3aed;">TOTAL ENTREGADO</td>
                             <td style="text-align:center; font-weight:800; color:#1d4ed8;">{{ $detail->sum('quantity') }}</td>
                             <td></td>
-                            <td style="text-align:center; font-weight:800; color:#555;">${{ number_format($detail->sum('subtotal'), 0, ',', '.') }}</td>
-                            <td style="text-align:center; font-weight:800; color:#7e22ce;">{{ $detail->sum('sold') }}</td>
-                            <td style="text-align:center; font-weight:800; color:#15803d;">{{ $detail->sum('paid') }}</td>
-                            <td style="text-align:center; font-weight:800; color:#b91c1c;">{{ $detail->sum('debe') }}</td>
-                            <td style="text-align:center; font-weight:800; color:#475569;">{{ $detail->sum('stock') }}</td>
+                            <td style="text-align:right; font-weight:800; color:#3b1f6e;">${{ number_format($detail->sum('subtotal'), 0, ',', '.') }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
+
+            {{-- Sección 2: Resumen ventas y pagos --}}
+            @if($detProduct)
+            <div style="padding:20px 28px;">
+                <div style="font-size:0.7rem; font-weight:800; text-transform:uppercase; letter-spacing:0.1em; color:#7c3aed; margin-bottom:16px;">💰 Ventas y cuenta corriente</div>
+                <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:16px;">
+                    <div style="background:#faf5ff; border:1px solid #e9d5ff; border-radius:12px; padding:16px; text-align:center;">
+                        <div style="font-size:1.6rem; font-weight:800; color:#7e22ce;">{{ $detProduct['sold'] }}</div>
+                        <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#7e22ce; opacity:0.8; margin-top:4px;">Unidades vendidas</div>
+                        <div style="font-size:0.75rem; color:#999; margin-top:4px;">de {{ $detProduct['delivered'] }} entregadas — quedan {{ $detProduct['stock'] }} en local</div>
+                    </div>
+                    <div style="background:{{ $detProduct['debe'] > 0 ? '#fff5f5' : '#f0fdf4' }}; border:1px solid {{ $detProduct['debe'] > 0 ? '#fecaca' : '#bbf7d0' }}; border-radius:12px; padding:16px; text-align:center;">
+                        <div style="font-size:1.6rem; font-weight:800; color:{{ $detProduct['debe'] > 0 ? '#b91c1c' : '#15803d' }};">
+                            @if($detProduct['debe'] > 0)
+                                {{ $detProduct['debe'] }} unid.
+                            @else
+                                ✓ Al día
+                            @endif
+                        </div>
+                        <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:{{ $detProduct['debe'] > 0 ? '#b91c1c' : '#15803d' }}; opacity:0.8; margin-top:4px;">
+                            {{ $detProduct['debe'] > 0 ? 'Vendidas sin pagar' : 'Todo pagado' }}
+                        </div>
+                        @if($detProduct['debe'] > 0)
+                        <div style="font-size:0.75rem; color:#b91c1c; font-weight:700; margin-top:4px;">${{ number_format($detProduct['debe_amount'], 0, ',', '.') }}</div>
+                        @endif
+                    </div>
+                </div>
+                <div style="font-size:0.8rem; color:#999; background:#faf8ff; border-radius:8px; padding:10px 14px; border:1px solid #ede9f5;">
+                    💡 Las ventas y pagos se registran en la sección <strong>Pagos recibidos</strong> de cada entrega — no se atribuyen a una fecha de envío específica.
+                </div>
+            </div>
+            @endif
         </div>
     </div>
     @endif
