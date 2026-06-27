@@ -242,6 +242,21 @@
     font-weight: 800;
     color: white;
 }
+.cr-chart-cat-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7c3aed;
+    margin: 16px 0 8px 144px;
+}
+.cr-chart-side {
+    width: 100px;
+    flex-shrink: 0;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
 
 .cr-empty {
     text-align: center;
@@ -389,26 +404,36 @@
         </table>
     </div>
 
-    {{-- Gráfico --}}
+    {{-- Gráfico por producto --}}
     @php
-        $chartData = $data->groupBy('category')->map(fn($r) => $r->sum('sold'))->filter()->sortDesc();
-        $chartMax  = $chartData->max() ?: 1;
+        $chartData = $data->filter(fn($r) => $r['sold'] > 0)->sortByDesc('sold');
+        $chartMax  = $chartData->max('sold') ?: 1;
+        $chartByCat = $chartData->groupBy('category');
     @endphp
     @if($chartData->isNotEmpty())
     <div class="cr-chart-wrap">
         <div class="cr-chart-title">
-            <span>📊</span> Productos más vendidos por categoría
+            <span>📊</span> Productos más vendidos
         </div>
-        @foreach($chartData as $cat => $qty)
-        @php $pct = round($qty / $chartMax * 100); @endphp
+        @foreach($chartByCat as $cat => $rows)
+        <div class="cr-chart-cat-label">◆ {{ $cat }}</div>
+        @foreach($rows as $row)
+        @php $pct = round($row['sold'] / $chartMax * 100); @endphp
         <div class="cr-chart-row">
-            <div class="cr-chart-label">{{ $cat }}</div>
+            <div class="cr-chart-label">{{ $row['product_name'] }}</div>
             <div class="cr-chart-bar-bg">
-                <div class="cr-chart-bar-fill" style="width: {{ max($pct, 12) }}%;">
-                    <span class="cr-chart-bar-val">{{ $qty }}</span>
+                <div class="cr-chart-bar-fill" style="width: {{ max($pct, 10) }}%;">
+                    <span class="cr-chart-bar-val">{{ $row['sold'] }} vend.</span>
                 </div>
             </div>
+            <div class="cr-chart-side">
+                <span style="color:#15803d; font-size:0.72rem; font-weight:700;">✓ {{ $row['paid_qty'] }}</span>
+                @if($row['debe'] > 0)
+                <span style="color:#b91c1c; font-size:0.72rem; font-weight:700;">· debe {{ $row['debe'] }}</span>
+                @endif
+            </div>
         </div>
+        @endforeach
         @endforeach
     </div>
     @endif
