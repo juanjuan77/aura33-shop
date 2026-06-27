@@ -52,6 +52,20 @@
        style="font-size:0.78rem; color:#a78bfa; text-decoration:none;">← Todos los locales</a>
 </div>
 
+{{-- Pendientes --}}
+@php $pending = $this->getPendingUnits(); @endphp
+@if(count($pending))
+<div class="wc-section-title" style="color:#b45309;">⏳ Unidades vendidas pendientes de cobro</div>
+<div style="background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:16px 20px; margin-bottom:24px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+    @foreach($pending as $name => $p)
+    <span style="background:#fef3c7; color:#92400e; border:1px solid #fcd34d; font-size:0.82rem; font-weight:700; padding:5px 14px; border-radius:50px;">
+        {{ $name }} × {{ $p['qty'] }} u.
+    </span>
+    @endforeach
+    <span style="font-size:0.78rem; color:#a16207; margin-left:4px;">— Usá "⏳ Imputar pendiente" cuando cobres estas unidades.</span>
+</div>
+@endif
+
 {{-- Pagos --}}
 <div class="wc-section-title">💳 Pagos registrados</div>
 

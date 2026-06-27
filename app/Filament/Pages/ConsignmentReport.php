@@ -100,8 +100,9 @@ class ConsignmentReport extends Page
         $allPayments = ConsignmentPayment::where('wholesale_request_id', $this->selectedWholesaler)->get();
         $itemIds = $items->pluck('id')->flip(); // id => index para búsqueda O(1)
 
-        // Pre-calcular qty_sold por item_id desde todos los pagos
+        // Pre-calcular qty_sold y qty_paid por item_id
         $soldMap = [];
+        $paidMap = [];
         foreach ($allPayments as $payment) {
             $soldItems = is_string($payment->items_sold)
                 ? json_decode($payment->items_sold, true)
@@ -111,19 +112,22 @@ class ConsignmentReport extends Page
                 $id = (int)($s['consignment_item_id'] ?? 0);
                 if ($itemIds->has($id)) {
                     $soldMap[$id] = ($soldMap[$id] ?? 0) + (int)($s['qty_sold'] ?? 0);
+                    $paidMap[$id] = ($paidMap[$id] ?? 0) + (int)($s['qty_paid'] ?? 0);
                 }
             }
         }
 
         // Group by product
-        return $items->groupBy('product_id')->map(function ($rows) use ($soldMap) {
+        return $items->groupBy('product_id')->map(function ($rows) use ($soldMap, $paidMap) {
             $first     = $rows->first();
             $product   = $first->product;
             $category  = $product?->category?->name ?? 'Sin categoría';
             $delivered = $rows->sum('quantity');
             $unitPrice = $first->unit_price;
             $allSold   = $rows->sum(fn($r) => $soldMap[$r->id] ?? 0);
+            $allPaid   = $rows->sum(fn($r) => $paidMap[$r->id] ?? 0);
             $stock     = max(0, $delivered - $allSold);
+            $debe      = max(0, $allSold - $allPaid);
 
             return [
                 'product_id'   => $first->product_id,
@@ -132,10 +136,10 @@ class ConsignmentReport extends Page
                 'unit_price'   => $unitPrice,
                 'delivered'    => $delivered,
                 'sold'         => $allSold,
-                'paid_qty'     => 0,
+                'paid_qty'     => $allPaid,
                 'stock'        => $stock,
-                'debe'         => 0,
-                'debe_amount'  => 0,
+                'debe'         => $debe,
+                'debe_amount'  => $debe * $unitPrice,
             ];
         })->values()->sortBy('category');
     }

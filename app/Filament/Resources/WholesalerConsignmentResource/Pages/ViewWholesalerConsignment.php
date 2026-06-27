@@ -77,7 +77,7 @@ class ViewWholesalerConsignment extends Page
         return array_filter($byProduct, fn($v) => $v['stock'] > 0);
     }
 
-    /** Formulario reutilizable para registrar/editar pago */
+    /** Formulario para registrar pago */
     protected function paymentForm(array $stockOptions): array
     {
         return [
@@ -96,8 +96,8 @@ class ViewWholesalerConsignment extends Page
                 ->maxSize(5120),
 
             Forms\Components\Repeater::make('items_sold')
-                ->label('Productos vendidos (opcional — para control de stock)')
-                ->helperText('Si el cliente pagó una deuda anterior sin vender nada nuevo, dejá esto vacío.')
+                ->label('Productos vendidos')
+                ->helperText('Si cobra una deuda anterior sin vender nada nuevo, dejá vacío.')
                 ->schema([
                     Forms\Components\Select::make('product_name')
                         ->label('Producto')
@@ -105,10 +105,13 @@ class ViewWholesalerConsignment extends Page
                         ->required()
                         ->searchable(),
                     Forms\Components\TextInput::make('qty_sold')
-                        ->label('Unidades vendidas')
+                        ->label('Vendidas')
                         ->numeric()->required()->minValue(1)->default(1),
+                    Forms\Components\TextInput::make('qty_paid')
+                        ->label('Paga ahora')
+                        ->numeric()->required()->minValue(0)->default(1),
                 ])
-                ->columns(2)
+                ->columns(3)
                 ->addActionLabel('+ Agregar producto')
                 ->defaultItems(0),
         ];
@@ -123,8 +126,54 @@ class ViewWholesalerConsignment extends Page
             return [
                 'consignment_item_id' => $itemId,
                 'qty_sold'            => (int)($row['qty_sold'] ?? 0),
+                'qty_paid'            => (int)($row['qty_paid'] ?? 0),
             ];
         })->filter(fn($r) => $r['consignment_item_id'])->values()->toArray();
+    }
+
+    /** Calcula unidades pendientes de cobro por producto */
+    public function getPendingUnits(): array
+    {
+        $consignments = $this->getConsignments();
+        $itemMeta = [];
+        foreach ($consignments as $c) {
+            foreach ($c->items as $item) {
+                $itemMeta[$item->id] = [
+                    'name'       => $item->product?->name ?? $item->product_name,
+                    'unit_price' => $item->unit_price,
+                    'item_id'    => $item->id,
+                ];
+            }
+        }
+
+        $soldMap = [];
+        $paidMap = [];
+        $payments = ConsignmentPayment::where('wholesale_request_id', $this->record->id)->get();
+        foreach ($payments as $pay) {
+            $items = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
+            if (! is_array($items)) continue;
+            foreach ($items as $s) {
+                $id = (int)($s['consignment_item_id'] ?? 0);
+                $soldMap[$id] = ($soldMap[$id] ?? 0) + (int)($s['qty_sold'] ?? 0);
+                $paidMap[$id] = ($paidMap[$id] ?? 0) + (int)($s['qty_paid'] ?? 0);
+            }
+        }
+
+        $pending = [];
+        foreach ($itemMeta as $id => $meta) {
+            $sold = $soldMap[$id] ?? 0;
+            $paid = $paidMap[$id] ?? 0;
+            $diff = $sold - $paid;
+            if ($diff > 0) {
+                $name = $meta['name'];
+                if (! isset($pending[$name])) {
+                    $pending[$name] = ['item_id' => $id, 'qty' => 0, 'unit_price' => $meta['unit_price']];
+                }
+                $pending[$name]['qty'] += $diff;
+            }
+        }
+
+        return $pending; // ['Botella Citrino' => ['item_id'=>X,'qty'=>1,'unit_price'=>48000]]
     }
 
     protected function getHeaderActions(): array
@@ -149,6 +198,72 @@ class ViewWholesalerConsignment extends Page
                         'items_sold'           => $this->resolveItemsSold($data['items_sold'] ?? [], $stock),
                     ]);
                     Notification::make()->title('Pago registrado')->success()->send();
+                }),
+
+            Action::make('imputar_pendiente')
+                ->label('⏳ Imputar pendiente')
+                ->color('warning')
+                ->form(function () {
+                    $pending = $this->getPendingUnits();
+                    if (empty($pending)) return [
+                        Forms\Components\Placeholder::make('no_pending')
+                            ->label('')->content('No hay unidades pendientes de cobro. ✓'),
+                    ];
+
+                    $options = collect($pending)->mapWithKeys(
+                        fn($v, $name) => [$name => $name . ' — ' . $v['qty'] . ' u. pendiente' . ($v['qty'] > 1 ? 's' : '')]
+                    )->toArray();
+
+                    return [
+                        Forms\Components\TextInput::make('amount')
+                            ->label('Monto cobrado ($)')
+                            ->numeric()->required()->prefix('$'),
+
+                        Forms\Components\FileUpload::make('receipt')
+                            ->label('Comprobante')
+                            ->acceptedFileTypes(['image/jpeg','image/png','image/webp','application/pdf'])
+                            ->directory('consignment-receipts')
+                            ->maxSize(5120),
+
+                        Forms\Components\Textarea::make('notes')->label('Notas (opcional)')->rows(2),
+
+                        Forms\Components\Repeater::make('items')
+                            ->label('Unidades pendientes que cobra ahora')
+                            ->schema([
+                                Forms\Components\Select::make('product_name')
+                                    ->label('Producto pendiente')
+                                    ->options($options)
+                                    ->required()->searchable(),
+                                Forms\Components\TextInput::make('qty_paid')
+                                    ->label('Unidades que paga')
+                                    ->numeric()->required()->minValue(1)->default(1),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('+ Agregar')
+                            ->defaultItems(1),
+                    ];
+                })
+                ->action(function (array $data) {
+                    $pending = $this->getPendingUnits();
+                    $itemsSold = collect($data['items'] ?? [])->map(function ($row) use ($pending) {
+                        $name   = $row['product_name'];
+                        $itemId = $pending[$name]['item_id'] ?? null;
+                        return [
+                            'consignment_item_id' => $itemId,
+                            'qty_sold'            => 0,
+                            'qty_paid'            => (int)($row['qty_paid'] ?? 0),
+                        ];
+                    })->filter(fn($r) => $r['consignment_item_id'])->values()->toArray();
+
+                    ConsignmentPayment::create([
+                        'wholesale_request_id' => $this->record->id,
+                        'consignment_id'       => null,
+                        'amount'               => $data['amount'],
+                        'notes'                => $data['notes'] ?? null,
+                        'receipt'              => $data['receipt'] ?? null,
+                        'items_sold'           => $itemsSold,
+                    ]);
+                    Notification::make()->title('Pendiente imputado')->success()->send();
                 }),
 
             Action::make('nueva_entrega')
