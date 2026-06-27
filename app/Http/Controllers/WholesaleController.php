@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Consignment;
 use App\Models\ConsignmentPayment;
 use App\Models\ConsignmentReport;
+use App\Models\ConsignmentRestockRequest;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\WholesaleRequest;
+use App\Notifications\RestockRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class WholesaleController extends Controller
 {
@@ -199,6 +202,65 @@ class WholesaleController extends Controller
             'totalDebt', 'totalPaid', 'pendingBalance', 'reportByProduct',
             'allPayments', 'globalItemMap', 'availableCategories', 'selectedCategory'
         ));
+    }
+
+    public function restockForm()
+    {
+        $wholesaler = $this->getWholesaler();
+        if (! $wholesaler) return redirect()->route('wholesale.login');
+
+        $products = Product::with('category')
+            ->where('active', true)
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn($p) => $p->category?->name ?? 'Sin categoría');
+
+        return view('shop.wholesale.restock', compact('wholesaler', 'products'));
+    }
+
+    public function restockStore(Request $request)
+    {
+        $wholesaler = $this->getWholesaler();
+        if (! $wholesaler) return redirect()->route('wholesale.login');
+
+        $request->validate([
+            'items'            => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity'   => 'required|integer|min:1',
+            'notes'            => 'nullable|string|max:500',
+        ], [
+            'items.required'           => 'Agregá al menos un producto.',
+            'items.*.product_id.required' => 'Seleccioná el producto.',
+            'items.*.quantity.min'     => 'La cantidad mínima es 1.',
+        ]);
+
+        $items = collect($request->items)->map(function ($row) {
+            $p = Product::with('category')->find($row['product_id']);
+            return [
+                'product_id'   => $p->id,
+                'product_name' => $p->name,
+                'category'     => $p->category?->name ?? 'Sin categoría',
+                'quantity'     => (int) $row['quantity'],
+            ];
+        })->toArray();
+
+        $restock = ConsignmentRestockRequest::create([
+            'wholesale_request_id' => $wholesaler->id,
+            'items'                => $items,
+            'status'               => 'pending',
+            'notes'                => $request->notes,
+        ]);
+
+        try {
+            $adminEmail = config('mail.from.address', 'ventas@aura33.com.ar');
+            Notification::route('mail', $adminEmail)
+                ->notify(new RestockRequestNotification($restock, $wholesaler));
+        } catch (\Exception $e) {
+            // No interrumpir si falla el mail
+        }
+
+        return redirect()->route('wholesale.portal')
+            ->with('success', '¡Pedido de reposición enviado! Te contactamos pronto. 📦');
     }
 
     private function getWholesaler(): ?WholesaleRequest

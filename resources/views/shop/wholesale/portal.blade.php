@@ -15,6 +15,9 @@
                 </p>
             </div>
             <div class="portal-header-actions">
+                <a href="{{ route('wholesale.restock') }}" class="btn" style="background:var(--accent,#7c3aed);">
+                    📦 Pedir reposición
+                </a>
                 <a href="{{ route('shop') }}" class="btn">
                     Hacer un pedido
                 </a>
