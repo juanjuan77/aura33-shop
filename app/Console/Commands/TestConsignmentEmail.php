@@ -35,18 +35,11 @@ class TestConsignmentEmail extends Command
         $consignment->id = 0;
 
         // Items falsos
-        $consignment->setRelation('items', collect([
-            tap(new ConsignmentItem([
-                'product_name' => 'Botella Fluorita Verde',
-                'quantity'     => 6,
-                'unit_price'   => 48000,
-            ]), fn($i) => $i->setRelation('product', null)),
-            tap(new ConsignmentItem([
-                'product_name' => 'Botella Amatista',
-                'quantity'     => 4,
-                'unit_price'   => 48000,
-            ]), fn($i) => $i->setRelation('product', null)),
-        ]));
+        $item1 = new ConsignmentItem(['quantity' => 6, 'unit_price' => 48000]);
+        $item1->product_name = 'Botella Fluorita Verde';
+        $item2 = new ConsignmentItem(['quantity' => 4, 'unit_price' => 48000]);
+        $item2->product_name = 'Botella Amatista';
+        $consignment->setRelation('items', collect([$item1, $item2]));
 
         Notification::route('mail', $email)
             ->notify(new NewConsignmentDeliveryNotification($consignment, $wholesaler));

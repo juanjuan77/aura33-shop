@@ -25,13 +25,13 @@ class NewConsignmentDeliveryNotification extends Notification
         $fecha = $c->delivery_date?->format('d/m/Y') ?? now()->format('d/m/Y');
 
         $lineas = $c->items->map(fn($i) =>
-            '• ' . ($i->product?->name ?? $i->product_name) .
+            '• ' . ($i->product_name ?: ($i->product?->name ?? '?')) .
             ' ×' . $i->quantity .
-            '  —  $' . number_format($i->unit_price, 0, ',', '.') . ' c/u'
+            '  —  $' . number_format($i->unit_price, 0, ',', '.') . ' c/u  =  $' . number_format($i->quantity * $i->unit_price, 0, ',', '.')
         )->implode("\n");
 
         $total = '$' . number_format(
-            $c->items->sum(fn($i) => $i->quantity * $i->unit_price), 0, ',', '.'
+            $c->items->sum(fn($i) => (int)$i->quantity * (float)$i->unit_price), 0, ',', '.'
         );
 
         $msg = (new MailMessage)
