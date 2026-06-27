@@ -7,10 +7,12 @@ use App\Models\Consignment;
 use App\Models\ConsignmentItem;
 use App\Models\ConsignmentPayment;
 use App\Models\Product;
+use App\Notifications\NewConsignmentDeliveryNotification;
 use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Notification as LaravelNotification;
 
 class ViewWholesalerConsignment extends Page
 {
@@ -318,7 +320,16 @@ class ViewWholesalerConsignment extends Page
                             'unit_price'   => $item['unit_price'],
                         ]);
                     }
-                    Notification::make()->title('Entrega registrada')->success()->send();
+
+                    // Email automático al mayorista
+                    try {
+                        LaravelNotification::route('mail', $this->record->email)
+                            ->notify(new NewConsignmentDeliveryNotification($consignment, $this->record));
+                    } catch (\Exception $e) {
+                        // No interrumpir si falla el mail
+                    }
+
+                    Notification::make()->title('Entrega registrada — email enviado al local')->success()->send();
                 }),
         ];
     }
