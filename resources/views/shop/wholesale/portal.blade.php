@@ -144,82 +144,72 @@
         {{-- ── CONSIGNACIONES ────────────────────────────── --}}
         @if($consignments->isNotEmpty())
         <div style="margin-top: 60px;">
-            <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--brand); font-weight:400; margin-bottom:6px;">
-                Cuenta corriente en consignación
+            <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--brand); font-weight:400; margin-bottom:28px;">
+                Mi cuenta en consignación
             </h2>
-            <p style="font-size:0.88rem; color:var(--muted); margin-bottom:28px;">
-                Productos entregados en tu local, lo que se vendió y los pagos recibidos.
-            </p>
 
-            {{-- Resumen global --}}
-            <div class="consign-summary-grid" style="margin-bottom:40px;">
-                <div class="consign-summary-card">
-                    <span class="consign-summary-label">Total entregado</span>
-                    <span class="consign-summary-val">${{ number_format($totalDebt, 0, ',', '.') }}</span>
+            {{-- 1. RESUMEN EN 4 TILES --}}
+            @php
+                $totalUnidadesEntregadas = $consignments->sum(fn($c) => $c->items->sum('quantity'));
+                $totalUnidadesVendidas   = $reportByProduct->sum('sold');
+                $totalEnStock            = $reportByProduct->sum('stock');
+            @endphp
+            <div class="cp-tiles">
+                <div class="cp-tile cp-tile--brand">
+                    <div class="cp-tile-n">${{ number_format($totalDebt, 0, ',', '.') }}</div>
+                    <div class="cp-tile-l">Total en consignación</div>
+                    <div class="cp-tile-sub">{{ $totalUnidadesEntregadas }} unidades entregadas</div>
                 </div>
-                <div class="consign-summary-card">
-                    <span class="consign-summary-label">Total cobrado</span>
-                    <span class="consign-summary-val consign-summary-val--paid">${{ number_format($totalPaid, 0, ',', '.') }}</span>
+                <div class="cp-tile cp-tile--purple">
+                    <div class="cp-tile-n">{{ $totalEnStock }}</div>
+                    <div class="cp-tile-l">Unidades en tu local</div>
+                    <div class="cp-tile-sub">todavía no vendidas</div>
                 </div>
-                <div class="consign-summary-card {{ $pendingBalance > 0 ? 'consign-summary-card--pending' : 'consign-summary-card--ok' }}">
-                    <span class="consign-summary-label">Saldo pendiente</span>
-                    <span class="consign-summary-val consign-summary-val--{{ $pendingBalance > 0 ? 'pending' : 'ok' }}">
-                        @if($pendingBalance <= 0)
-                            ✓ Al día
-                        @else
-                            ${{ number_format($pendingBalance, 0, ',', '.') }}
-                        @endif
-                    </span>
+                <div class="cp-tile cp-tile--green">
+                    <div class="cp-tile-n">${{ number_format($totalPaid, 0, ',', '.') }}</div>
+                    <div class="cp-tile-l">Total pagado</div>
+                    <div class="cp-tile-sub">{{ $allPayments->count() }} pago{{ $allPayments->count()!=1?'s':'' }} registrados</div>
+                </div>
+                <div class="cp-tile {{ $pendingBalance > 0 ? 'cp-tile--red' : 'cp-tile--ok' }}">
+                    <div class="cp-tile-n">{{ $pendingBalance > 0 ? '$'.number_format($pendingBalance,0,',','.') : '✓' }}</div>
+                    <div class="cp-tile-l">{{ $pendingBalance > 0 ? 'Saldo que debés' : 'Al día' }}</div>
+                    <div class="cp-tile-sub">{{ $pendingBalance > 0 ? 'ventas realizadas sin pagar' : 'todo pagado' }}</div>
                 </div>
             </div>
 
-            {{-- Informe por producto --}}
+            {{-- 2. STOCK ACTUAL POR PRODUCTO --}}
             @if($reportByProduct->isNotEmpty())
-            <div class="consign-report-wrap">
-                <h3 class="consign-section-title" style="margin-bottom:16px;">📊 Informe por producto</h3>
+            <div class="cp-section">
+                <div class="cp-section-title">📦 Stock actual en tu local</div>
                 <div class="orders-table-wrap">
                     <table class="orders-table">
                         <thead>
                             <tr>
-                                <th>Categoría</th>
                                 <th>Producto</th>
-                                <th style="text-align:center;">Entregados</th>
-                                <th style="text-align:center;">Vendidos</th>
-                                <th style="text-align:center;">Stock tuyo</th>
-                                <th style="text-align:center;">Pagados</th>
-                                <th style="text-align:center;">Debés</th>
-                                <th style="text-align:right;">Monto</th>
+                                <th style="text-align:center;">Recibiste</th>
+                                <th style="text-align:center;">Vendiste</th>
+                                <th style="text-align:center;">Te quedan</th>
+                                <th style="text-align:center;">Pagaste</th>
+                                <th style="text-align:right;">Debés</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @php $prevCat = null; @endphp
                             @foreach($reportByProduct as $row)
-                            @if($row['category'] !== $prevCat)
-                            <tr style="background:rgba(74,59,82,0.03);">
-                                <td colspan="8" style="padding:8px 18px; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted);">
-                                    {{ $row['category'] }}
-                                </td>
-                            </tr>
-                            @php $prevCat = $row['category']; @endphp
-                            @endif
                             <tr>
-                                <td></td>
-                                <td style="font-weight:600; font-size:0.88rem;">{{ $row['product_name'] }}</td>
-                                <td style="text-align:center;"><span class="report-badge report-badge--blue">{{ $row['delivered'] }}</span></td>
-                                <td style="text-align:center;"><span class="report-badge report-badge--purple">{{ $row['sold'] }}</span></td>
-                                <td style="text-align:center;"><span class="report-badge report-badge--gray">{{ $row['stock'] }}</span></td>
-                                <td style="text-align:center;"><span class="report-badge report-badge--green">{{ $row['paid_qty'] }}</span></td>
-                                <td style="text-align:center;">
-                                    @if($row['debe'] > 0)
-                                        <span class="report-badge report-badge--red">{{ $row['debe'] }}</span>
-                                    @else
-                                        <span style="color:#15803d; font-weight:700; font-size:0.8rem;">✓</span>
-                                    @endif
+                                <td>
+                                    <div style="font-weight:600; font-size:0.88rem; color:var(--brand);">{{ $row['product_name'] }}</div>
+                                    <div style="font-size:0.72rem; color:var(--muted);">{{ $row['category'] }}</div>
                                 </td>
-                                <td style="text-align:right; font-weight:700; font-size:0.88rem; color:{{ $row['debe_amount'] > 0 ? '#b91c1c' : '#15803d' }};">
-                                    @if($row['debe_amount'] > 0)
-                                        ${{ number_format($row['debe_amount'], 0, ',', '.') }}
-                                    @else —
+                                <td style="text-align:center;"><span class="rp-badge rp-badge--blue">{{ $row['delivered'] }}</span></td>
+                                <td style="text-align:center;"><span class="rp-badge rp-badge--purple">{{ $row['sold'] }}</span></td>
+                                <td style="text-align:center;"><span class="rp-badge {{ $row['stock'] > 0 ? 'rp-badge--gray' : 'rp-badge--ok' }}">{{ $row['stock'] }}</span></td>
+                                <td style="text-align:center;"><span class="rp-badge rp-badge--green">{{ $row['paid_qty'] }}</span></td>
+                                <td style="text-align:right; font-weight:700; font-size:0.88rem;">
+                                    @if($row['debe'] > 0)
+                                        <span style="color:#b91c1c;">${{ number_format($row['debe_amount'],0,',','.') }}</span>
+                                        <span style="font-size:0.72rem; color:#b91c1c; font-weight:400;"> ({{ $row['debe'] }} u.)</span>
+                                    @else
+                                        <span style="color:#15803d; font-weight:700;">✓ Al día</span>
                                     @endif
                                 </td>
                             </tr>
@@ -227,142 +217,77 @@
                         </tbody>
                     </table>
                 </div>
-
-                {{-- Gráfico ventas por categoría --}}
-                @php
-                    $chartCats = $reportByProduct->groupBy('category')->map(fn($r) => $r->sum('sold'))->filter()->sortDesc();
-                    $chartMax  = $chartCats->max() ?: 1;
-                @endphp
-                @if($chartCats->isNotEmpty())
-                <div style="margin-top:24px; background:var(--white); border:1px solid var(--border); border-radius:14px; padding:24px; box-shadow:var(--shadow-soft);">
-                    <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:20px;">
-                        Más vendido por categoría
-                    </div>
-                    @foreach($chartCats as $cat => $qty)
-                    @php $pct = round($qty / $chartMax * 100); @endphp
-                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-                        <div style="width:120px; font-size:0.78rem; color:var(--text); text-align:right; flex-shrink:0;">{{ $cat }}</div>
-                        <div style="flex:1; background:#f0edf4; border-radius:99px; height:28px; position:relative; overflow:hidden;">
-                            <div style="height:28px; border-radius:99px; background:linear-gradient(90deg,#7c3aed,#a855f7); display:flex; align-items:center; justify-content:flex-end; padding-right:10px; width:{{ max($pct, 10) }}%;">
-                                <span style="font-size:0.75rem; font-weight:700; color:white;">{{ $qty }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @endif
             </div>
             @endif
 
-            {{-- Una card por cada entrega --}}
-            @foreach($consignments as $c)
-            @php
-                $cDelivered = $c->totalDelivered();
-                $cPaid      = $c->payments->sum('amount');
-                $cSaldo     = $cDelivered - $cPaid;
-                $cPct       = $cDelivered > 0 ? min(100, round($cPaid / $cDelivered * 100)) : 0;
-                $itemMap    = $c->items->keyBy('id');
-            @endphp
-            <div class="consign-card">
-
-                {{-- Card header --}}
-                <div class="consign-card-header">
-                    <div>
-                        <span class="consign-card-date">{{ $c->created_at->format('d/m/Y') }}</span>
-                        <span class="consign-card-badge {{ $c->status === 'active' ? 'badge-active' : 'badge-closed' }}">
-                            {{ $c->status === 'active' ? 'Activa' : 'Cerrada' }}
-                        </span>
+            {{-- 3. MIS PAGOS --}}
+            <div class="cp-section">
+                <div class="cp-section-title">💳 Mis pagos realizados</div>
+                @if($allPayments->isEmpty())
+                    <div class="portal-empty" style="padding:32px;">
+                        <p style="color:var(--muted); font-size:0.88rem;">Todavía no hay pagos registrados.</p>
                     </div>
-                    <div class="consign-card-totals">
-                        <span class="consign-card-total-label">Total entregado:</span>
-                        <span class="consign-card-total-val">${{ number_format($cDelivered, 0, ',', '.') }}</span>
-                        @if($cSaldo <= 0)
-                            <span class="badge-saldado">✓ Saldado</span>
-                        @else
-                            <span class="badge-debe">Debe ${{ number_format($cSaldo, 0, ',', '.') }}</span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="consign-card-body">
-
-                    {{-- Productos entregados --}}
-                    <div class="consign-col">
-                        <div class="consign-col-title">📦 Productos entregados</div>
-                        <table class="consign-mini-table">
-                            <thead><tr><th>Producto</th><th>Cant.</th><th>Precio u.</th><th>Subtotal</th></tr></thead>
-                            <tbody>
-                                @foreach($c->items as $item)
-                                <tr>
-                                    <td>{{ $item->product_name }}</td>
-                                    <td style="text-align:center;">{{ $item->quantity }}</td>
-                                    <td>${{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                                    <td style="font-weight:600;">${{ number_format($item->quantity * $item->unit_price, 0, ',', '.') }}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {{-- Pagos recibidos --}}
-                    <div class="consign-col">
-                        <div class="consign-col-title">💳 Pagos recibidos</div>
-
-                        @if($c->payments->isEmpty())
-                            <p style="font-size:0.85rem; color:var(--muted); padding:12px 0;">Sin pagos registrados aún.</p>
-                        @else
-                            @foreach($c->payments as $pay)
-                            <div class="consign-pay-row">
-                                <div class="consign-pay-top">
-                                    <span class="consign-pay-date">{{ $pay->created_at->format('d/m/Y') }}</span>
-                                    <span class="consign-pay-amount">${{ number_format($pay->amount, 0, ',', '.') }}</span>
-                                </div>
-                                @if($pay->items_sold)
-                                @php
-                                    $sold = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
-                                    $totalUnits = collect($sold)->sum(fn($s) => (int)($s['qty_sold'] ?? 0));
-                                @endphp
-                                @if(is_array($sold) && count($sold))
-                                <div class="consign-pay-items">
-                                    @foreach($sold as $s)
-                                    @php
-                                        $sid  = (int)($s['consignment_item_id'] ?? 0);
-                                        $name = $itemMap->has($sid) ? $itemMap->get($sid)->product_name : '?';
-                                        $qty  = $s['qty_sold'] ?? '?';
-                                    @endphp
-                                    <span class="consign-pay-tag">{{ $name }} <strong>×{{ $qty }}</strong></span>
-                                    @endforeach
-                                    <span class="consign-pay-tag-units">{{ $totalUnits }} unid. vendidas</span>
-                                </div>
-                                @endif
-                                @endif
-                                @if($pay->notes)
-                                <div style="font-size:0.78rem; color:var(--muted); margin-top:4px;">{{ $pay->notes }}</div>
-                                @endif
-                            </div>
+                @else
+                <div class="orders-table-wrap">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Productos vendidos en ese pago</th>
+                                <th style="text-align:right;">Monto pagado</th>
+                                <th style="text-align:center;">Comprobante</th>
+                                <th>Notas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($allPayments as $pay)
+                            @php
+                                $soldArr = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
+                            @endphp
+                            <tr>
+                                <td style="white-space:nowrap; font-size:0.85rem; color:var(--muted);">{{ $pay->created_at->format('d/m/Y') }}</td>
+                                <td>
+                                    @if(is_array($soldArr) && count($soldArr))
+                                    <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                                        @foreach($soldArr as $s)
+                                        @php
+                                            $sid  = (int)($s['consignment_item_id'] ?? 0);
+                                            $item = $globalItemMap->get($sid);
+                                            $name = $item ? ($item->product?->name ?? $item->product_name) : null;
+                                            $qty  = $s['qty_sold'] ?? 0;
+                                        @endphp
+                                        @if($name && $qty)
+                                        <span class="rp-tag">{{ $name }} ×{{ $qty }}</span>
+                                        @endif
+                                        @endforeach
+                                    </div>
+                                    @else
+                                        <span style="color:var(--muted); font-size:0.82rem;">—</span>
+                                    @endif
+                                </td>
+                                <td style="text-align:right; font-weight:700; color:#15803d; font-size:0.95rem;">${{ number_format($pay->amount,0,',','.') }}</td>
+                                <td style="text-align:center;">
+                                    @if($pay->receipt)
+                                        <a href="/storage/{{ $pay->receipt }}" target="_blank" class="rp-receipt-btn">Ver 📎</a>
+                                    @else
+                                        <span style="color:var(--muted); font-size:0.78rem;">—</span>
+                                    @endif
+                                </td>
+                                <td style="font-size:0.82rem; color:var(--muted);">{{ $pay->notes ?: '—' }}</td>
+                            </tr>
                             @endforeach
-                        @endif
-
-                        {{-- Barra progreso --}}
-                        <div class="consign-progress-wrap">
-                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-bottom:6px;">
-                                <span>Cobrado: ${{ number_format($cPaid, 0, ',', '.') }}</span>
-                                <span>{{ $cPct }}%</span>
-                            </div>
-                            <div class="consign-progress-bar">
-                                <div class="consign-progress-fill" style="width:{{ $cPct }}%; background:{{ $cSaldo <= 0 ? '#22c55e' : '#f59e0b' }};"></div>
-                            </div>
-                            @if($cSaldo > 0)
-                            <div style="font-size:0.78rem; color:#b91c1c; margin-top:6px; font-weight:600;">
-                                Saldo pendiente: ${{ number_format($cSaldo, 0, ',', '.') }}
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-
-                </div>{{-- /card-body --}}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background:rgba(74,59,82,0.03);">
+                                <td colspan="2" style="padding:14px 18px; font-weight:700; color:var(--brand);">TOTAL PAGADO</td>
+                                <td style="text-align:right; font-weight:800; color:#15803d; font-size:1rem; padding:14px 18px;">${{ number_format($totalPaid,0,',','.') }}</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                @endif
             </div>
-            @endforeach
 
         </div>
         @endif
@@ -751,5 +676,106 @@
 .report-badge--gray   { background:#f5f5f5; color:#555; }
 .report-badge--green  { background:#f0fdf4; color:#15803d; }
 .report-badge--red    { background:#fef2f2; color:#b91c1c; }
+
+/* ── Consignment portal nuevo ── */
+.cp-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+}
+@media (max-width: 900px) { .cp-tiles { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 500px) { .cp-tiles { grid-template-columns: 1fr; } }
+
+.cp-tile {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 20px 18px;
+    box-shadow: var(--shadow-soft);
+    display: flex; flex-direction: column; gap: 4px;
+}
+.cp-tile--brand { border-top: 3px solid var(--brand); }
+.cp-tile--purple { border-top: 3px solid #9333ea; }
+.cp-tile--green  { border-top: 3px solid #22c55e; }
+.cp-tile--red    { border-top: 3px solid #ef4444; }
+.cp-tile--ok     { border-top: 3px solid #22c55e; }
+
+.cp-tile-n {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--brand);
+    font-weight: 400;
+    line-height: 1;
+}
+.cp-tile--green  .cp-tile-n { color: #15803d; }
+.cp-tile--red    .cp-tile-n { color: #b91c1c; }
+.cp-tile--ok     .cp-tile-n { color: #15803d; font-size: 2rem; }
+
+.cp-tile-l {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--brand);
+    margin-top: 8px;
+}
+.cp-tile-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+.cp-section {
+    margin-bottom: 40px;
+}
+.cp-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--brand);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.rp-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.rp-badge--blue   { background:#eff6ff; color:#1d4ed8; }
+.rp-badge--purple { background:#faf5ff; color:#7e22ce; }
+.rp-badge--gray   { background:#f5f5f5; color:#555; }
+.rp-badge--green  { background:#f0fdf4; color:#15803d; }
+.rp-badge--red    { background:#fef2f2; color:#b91c1c; }
+.rp-badge--ok     { background:#f0fdf4; color:#15803d; }
+
+.rp-tag {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 50px;
+}
+
+.rp-receipt-btn {
+    display: inline-block;
+    background: #faf5ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.rp-receipt-btn:hover { background: #f3e8ff; color: #6b21a8; }
 </style>
 @endpush

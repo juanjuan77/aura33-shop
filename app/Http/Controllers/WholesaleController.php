@@ -177,9 +177,13 @@ class WholesaleController extends Controller
             return $r;
         })->sortBy('category')->values();
 
+        $allPayments   = $consignments->flatMap(fn($c) => $c->payments)->sortByDesc('created_at');
+        $globalItemMap = $consignments->flatMap(fn($c) => $c->items)->keyBy('id');
+
         return view('shop.wholesale.portal', compact(
             'wholesaler', 'orders', 'consignments', 'reports', 'payments',
-            'totalDebt', 'totalPaid', 'pendingBalance', 'reportByProduct'
+            'totalDebt', 'totalPaid', 'pendingBalance', 'reportByProduct',
+            'allPayments', 'globalItemMap'
         ));
     }
 
