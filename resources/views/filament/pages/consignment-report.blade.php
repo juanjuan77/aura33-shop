@@ -24,18 +24,37 @@
     margin-bottom: 8px;
 }
 
+.cr-select-wrap {
+    position: relative;
+}
+.cr-select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #7c3aed;
+    font-size: 0.9rem;
+}
 .cr-filter-select {
     width: 100%;
-    border: 1.5px solid #ddd6fe;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.88rem;
-    color: #3b1f6e;
-    background: white;
-    outline: none;
-    transition: border-color 0.2s;
+    border: 1.5px solid #ddd6fe !important;
+    border-radius: 10px !important;
+    padding: 10px 36px 10px 14px !important;
+    font-size: 0.88rem !important;
+    color: #3b1f6e !important;
+    background: white !important;
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
 }
-.cr-filter-select:focus { border-color: #7c3aed; }
+.cr-filter-select:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.15) !important;
+}
 
 .cr-stats {
     display: grid;
@@ -240,21 +259,25 @@
     <div class="cr-filters">
         <div>
             <label class="cr-filter-label">💎 Mayorista / Local</label>
-            <select wire:model.live="selectedWholesaler" class="cr-filter-select">
-                <option value="">— Seleccioná un local —</option>
-                @foreach($this->getWholesalers() as $w)
-                    <option value="{{ $w->id }}">{{ $w->business_name }} — {{ $w->city }}</option>
-                @endforeach
-            </select>
+            <div class="cr-select-wrap">
+                <select wire:model.live="selectedWholesaler" class="cr-filter-select">
+                    <option value="">— Seleccioná un local —</option>
+                    @foreach($this->getWholesalers() as $w)
+                        <option value="{{ $w->id }}">{{ $w->business_name }} — {{ $w->city }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
         <div>
             <label class="cr-filter-label">🏷️ Categoría</label>
-            <select wire:model.live="selectedCategory" class="cr-filter-select">
-                <option value="">Todas las categorías</option>
-                @foreach($this->getCategories() as $cat)
-                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-            </select>
+            <div class="cr-select-wrap">
+                <select wire:model.live="selectedCategory" class="cr-filter-select">
+                    <option value="">Todas las categorías</option>
+                    @foreach($this->getCategories() as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
     </div>
 
