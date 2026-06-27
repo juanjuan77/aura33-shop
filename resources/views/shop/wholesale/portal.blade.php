@@ -172,8 +172,8 @@
                 </div>
                 <div class="cp-tile {{ $pendingBalance > 0 ? 'cp-tile--red' : 'cp-tile--ok' }}">
                     <div class="cp-tile-n">{{ $pendingBalance > 0 ? '$'.number_format($pendingBalance,0,',','.') : '✓' }}</div>
-                    <div class="cp-tile-l">{{ $pendingBalance > 0 ? 'Saldo que debés' : 'Al día' }}</div>
-                    <div class="cp-tile-sub">{{ $pendingBalance > 0 ? 'ventas realizadas sin pagar' : 'todo pagado' }}</div>
+                    <div class="cp-tile-l">{{ $pendingBalance > 0 ? 'Pendiente de pago' : 'Al día' }}</div>
+                    <div class="cp-tile-sub">{{ $pendingBalance > 0 ? 'por ventas realizadas' : 'todo al día ✓' }}</div>
                 </div>
             </div>
 
@@ -188,9 +188,7 @@
                                 <th>Producto</th>
                                 <th style="text-align:center;">Recibiste</th>
                                 <th style="text-align:center;">Vendiste</th>
-                                <th style="text-align:center;">Te quedan</th>
-                                <th style="text-align:center;">Pagaste</th>
-                                <th style="text-align:right;">Debés</th>
+                                <th style="text-align:center;">Te quedan en local</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -203,15 +201,6 @@
                                 <td style="text-align:center;"><span class="rp-badge rp-badge--blue">{{ $row['delivered'] }}</span></td>
                                 <td style="text-align:center;"><span class="rp-badge rp-badge--purple">{{ $row['sold'] }}</span></td>
                                 <td style="text-align:center;"><span class="rp-badge {{ $row['stock'] > 0 ? 'rp-badge--gray' : 'rp-badge--ok' }}">{{ $row['stock'] }}</span></td>
-                                <td style="text-align:center;"><span class="rp-badge rp-badge--green">{{ $row['paid_qty'] }}</span></td>
-                                <td style="text-align:right; font-weight:700; font-size:0.88rem;">
-                                    @if($row['debe'] > 0)
-                                        <span style="color:#b91c1c;">${{ number_format($row['debe_amount'],0,',','.') }}</span>
-                                        <span style="font-size:0.72rem; color:#b91c1c; font-weight:400;"> ({{ $row['debe'] }} u.)</span>
-                                    @else
-                                        <span style="color:#15803d; font-weight:700;">✓ Al día</span>
-                                    @endif
-                                </td>
                             </tr>
                             @endforeach
                         </tbody>
