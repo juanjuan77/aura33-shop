@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WholesalerConsignmentResource\Pages;
+use App\Models\ConsignmentPayment;
 use App\Models\WholesaleRequest;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -46,7 +47,7 @@ class WholesalerConsignmentResource extends Resource
                     ->label('Total cobrado')
                     ->getStateUsing(fn($record) =>
                         '$' . number_format(
-                            $record->consignments->sum(fn($c) => $c->payments->sum('amount')),
+                            ConsignmentPayment::where('wholesale_request_id', $record->id)->sum('amount'),
                             0, ',', '.'
                         )
                     )
@@ -55,13 +56,15 @@ class WholesalerConsignmentResource extends Resource
                     ->label('Saldo pendiente')
                     ->getStateUsing(function ($record) {
                         $entregado = $record->consignments->sum(fn($c) => $c->items->sum(fn($i) => $i->quantity * $i->unit_price));
-                        $cobrado   = $record->consignments->sum(fn($c) => $c->payments->sum('amount'));
+                        $cobrado   = ConsignmentPayment::where('wholesale_request_id', $record->id)->sum('amount');
                         $saldo     = $entregado - $cobrado;
                         return $saldo > 0 ? '$' . number_format($saldo, 0, ',', '.') : '✓ Al día';
                     })
-                    ->color(fn($record) => $record->consignments->sum(fn($c) =>
-                        $c->items->sum(fn($i) => $i->quantity * $i->unit_price) - $c->payments->sum('amount')
-                    ) > 0 ? 'danger' : 'success'),
+                    ->color(function ($record) {
+                        $entregado = $record->consignments->sum(fn($c) => $c->items->sum(fn($i) => $i->quantity * $i->unit_price));
+                        $cobrado   = ConsignmentPayment::where('wholesale_request_id', $record->id)->sum('amount');
+                        return ($entregado - $cobrado) > 0 ? 'danger' : 'success';
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('ver')
