@@ -15,9 +15,11 @@
                 </p>
             </div>
             <div class="portal-header-actions">
+                @if($wholesaler->is_consignment)
                 <a href="{{ route('wholesale.restock') }}" class="btn" style="background:var(--accent,#7c3aed);">
                     📦 Pedir reposición
                 </a>
+                @endif
                 <a href="{{ route('shop') }}" class="btn">
                     Hacer un pedido
                 </a>
@@ -145,6 +147,7 @@
         </div>
 
         {{-- ── CONSIGNACIONES ────────────────────────────── --}}
+        @if($wholesaler->is_consignment)
         @if($consignments->isNotEmpty())
         <div style="margin-top: 60px;">
             <h2 style="font-family:var(--font-serif); font-size:1.6rem; color:var(--brand); font-weight:400; margin-bottom:28px;">
@@ -370,6 +373,7 @@
 
         </div>
         @endif
+        @endif {{-- is_consignment --}}
 
     </div>
 </div>

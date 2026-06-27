@@ -14,12 +14,12 @@ class WholesaleRequest extends Model
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'business_name', 'cuit',
         'city', 'province', 'business_type', 'notes',
-        'status', 'admin_notes', 'reviewed_at',
+        'status', 'is_consignment', 'admin_notes', 'reviewed_at',
     ];
 
     protected $hidden = ['password'];
 
-    protected $casts = ['reviewed_at' => 'datetime'];
+    protected $casts = ['reviewed_at' => 'datetime', 'is_consignment' => 'boolean'];
 
     const STATUSES = [
         'pending'  => 'Pendiente de revisión',

@@ -64,6 +64,10 @@ class WholesaleRequestResource extends Resource
                         ->required(),
                     Forms\Components\DateTimePicker::make('reviewed_at')
                         ->label('Fecha de revisión'),
+                    Forms\Components\Toggle::make('is_consignment')
+                        ->label('¿Trabaja en consignación?')
+                        ->helperText('Activa el módulo de consignación en su portal y en el admin.')
+                        ->columnSpanFull(),
                     Forms\Components\Textarea::make('admin_notes')
                         ->label('Notas internas')
                         ->placeholder('Solo visible en el admin...')
@@ -111,6 +115,14 @@ class WholesaleRequestResource extends Resource
                         'rejected' => 'danger',
                         default    => 'warning',
                     }),
+
+                Tables\Columns\IconColumn::make('is_consignment')
+                    ->label('Consig.')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-cube')
+                    ->falseIcon('heroicon-o-minus')
+                    ->trueColor('warning')
+                    ->falseColor('gray'),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
@@ -124,10 +136,19 @@ class WholesaleRequestResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn ($record) => $record->status === 'pending')
-                    ->requiresConfirmation()
-                    ->modalHeading('¿Aprobar solicitud?')
+                    ->modalHeading('Aprobar solicitud')
                     ->modalDescription(fn ($record) => "Se aprobará a {$record->name} ({$record->email}) como mayorista.")
-                    ->action(fn ($record) => $record->update(['status' => 'approved', 'reviewed_at' => Carbon::now()])),
+                    ->form([
+                        Forms\Components\Toggle::make('is_consignment')
+                            ->label('¿Trabaja en consignación?')
+                            ->helperText('Activa el módulo de consignación en su portal.')
+                            ->default(false),
+                    ])
+                    ->action(fn ($record, array $data) => $record->update([
+                        'status'         => 'approved',
+                        'is_consignment' => $data['is_consignment'] ?? false,
+                        'reviewed_at'    => Carbon::now(),
+                    ])),
 
                 Action::make('reject')
                     ->label('Rechazar')
