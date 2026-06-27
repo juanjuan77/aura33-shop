@@ -180,7 +180,20 @@
             {{-- 2. STOCK ACTUAL POR PRODUCTO --}}
             @if($reportByProduct->isNotEmpty())
             <div class="cp-section">
-                <div class="cp-section-title">📦 Stock actual en tu local</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border);">
+                    <div class="cp-section-title" style="margin:0; border:none; padding:0;">📦 Stock actual en tu local</div>
+                    @if($availableCategories->count() > 1)
+                    <form method="GET" action="{{ route('wholesale.portal') }}" style="display:flex; align-items:center; gap:8px;">
+                        <label style="font-size:0.75rem; color:var(--muted); font-weight:600;">Categoría:</label>
+                        <select name="cat" onchange="this.form.submit()"
+                            style="font-size:0.82rem; border:1px solid var(--border); border-radius:8px; padding:5px 10px; background:white; color:var(--brand); cursor:pointer;">
+                            @foreach($availableCategories as $cat)
+                            <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                    @endif
+                </div>
                 <div class="orders-table-wrap">
                     <table class="orders-table">
                         <thead>

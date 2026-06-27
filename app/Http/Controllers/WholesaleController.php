@@ -177,20 +177,27 @@ class WholesaleController extends Controller
                 unset($row);
             }
         }
-        $reportByProduct = collect($reportMap)->map(function ($r) {
+        $allReportByProduct = collect($reportMap)->map(function ($r) {
             $r['stock']       = max(0, $r['delivered'] - $r['sold']);
             $r['debe']        = max(0, $r['sold'] - $r['paid_qty']);
             $r['debe_amount'] = $r['debe'] * $r['unit_price'];
             return $r;
         })->sortBy('category')->values();
 
-        $allPayments   = $payments; // ya cargado por wholesale_request_id, incluye consignment_id=null
+        $availableCategories = $allReportByProduct->pluck('category')->unique()->sort()->values();
+        $defaultCat          = $availableCategories->first(fn($c) => str_contains(strtolower($c), 'botella')) ?? $availableCategories->first();
+        $selectedCategory    = request('cat', $defaultCat);
+        $reportByProduct     = $selectedCategory
+            ? $allReportByProduct->filter(fn($r) => $r['category'] === $selectedCategory)->values()
+            : $allReportByProduct;
+
+        $allPayments   = $payments;
         $globalItemMap = $consignments->flatMap(fn($c) => $c->items)->keyBy('id');
 
         return view('shop.wholesale.portal', compact(
             'wholesaler', 'orders', 'consignments', 'reports', 'payments',
             'totalDebt', 'totalPaid', 'pendingBalance', 'reportByProduct',
-            'allPayments', 'globalItemMap'
+            'allPayments', 'globalItemMap', 'availableCategories', 'selectedCategory'
         ));
     }
 
