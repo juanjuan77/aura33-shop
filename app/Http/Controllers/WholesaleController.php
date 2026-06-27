@@ -169,7 +169,8 @@ class WholesaleController extends Controller
                 $sid = (int)($s['consignment_item_id'] ?? 0);
                 foreach ($reportMap as $pid => &$row) {
                     if (in_array($sid, $row['_item_ids'])) {
-                        $row['sold'] += (int)($s['qty_sold'] ?? 0);
+                        $row['sold']     += (int)($s['qty_sold'] ?? 0);
+                        $row['paid_qty'] += (int)($s['qty_paid'] ?? 0);
                         break;
                     }
                 }
@@ -183,7 +184,7 @@ class WholesaleController extends Controller
             return $r;
         })->sortBy('category')->values();
 
-        $allPayments   = $consignments->flatMap(fn($c) => $c->payments)->sortByDesc('created_at');
+        $allPayments   = $payments; // ya cargado por wholesale_request_id, incluye consignment_id=null
         $globalItemMap = $consignments->flatMap(fn($c) => $c->items)->keyBy('id');
 
         return view('shop.wholesale.portal', compact(
