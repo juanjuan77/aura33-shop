@@ -266,6 +266,73 @@
     border-radius: 16px;
     color: #7c3aed;
 }
+
+.cr-clickable-row { cursor: pointer; transition: background 0.15s; }
+.cr-clickable-row:hover td { background: #f5f0fb !important; }
+
+.cr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,10,60,0.45);
+    backdrop-filter: blur(3px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.cr-modal {
+    background: white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(124,58,237,0.25);
+}
+.cr-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid #ede9f5;
+    background: linear-gradient(135deg, #faf8ff, #f5f0fb);
+    border-radius: 20px 20px 0 0;
+}
+.cr-modal-close {
+    background: #ede9f5;
+    border: none;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    font-size: 0.8rem;
+    color: #7c3aed;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.cr-modal-close:hover { background: #ddd6fe; }
+
+.cr-modal-stats {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 12px;
+    padding: 20px 28px;
+    border-bottom: 1px solid #ede9f5;
+}
+.cr-mstat { border-radius: 12px; padding: 14px 10px; text-align: center; }
+.cr-mstat--blue   { background:#eff6ff; border:1px solid #bfdbfe; }
+.cr-mstat--purple { background:#faf5ff; border:1px solid #e9d5ff; }
+.cr-mstat--gray   { background:#f8fafc; border:1px solid #e2e8f0; }
+.cr-mstat--green  { background:#f0fdf4; border:1px solid #bbf7d0; }
+.cr-mstat--red    { background:#fff5f5; border:1px solid #fecaca; }
+.cr-mstat-n { font-size:1.6rem; font-weight:800; line-height:1; }
+.cr-mstat--blue .cr-mstat-n   { color:#1d4ed8; }
+.cr-mstat--purple .cr-mstat-n { color:#7e22ce; }
+.cr-mstat--gray .cr-mstat-n   { color:#475569; }
+.cr-mstat--green .cr-mstat-n  { color:#15803d; }
+.cr-mstat--red .cr-mstat-n    { color:#b91c1c; }
+.cr-mstat-l { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; opacity:0.7; }
 </style>
 
 <div class="cr-wrap">
@@ -366,9 +433,12 @@
                 </tr>
                 @php $prevCat = $row['category']; @endphp
                 @endif
-                <tr>
+                <tr class="cr-clickable-row" wire:click="openDetail({{ $row['product_id'] }})" title="Ver detalle de entregas">
                     <td></td>
-                    <td style="font-weight:600; color:#3b1f6e;">{{ $row['product_name'] }}</td>
+                    <td style="font-weight:600; color:#3b1f6e;">
+                        {{ $row['product_name'] }}
+                        <span style="font-size:0.65rem; color:#a78bfa; margin-left:4px;">↗ ver</span>
+                    </td>
                     <td style="text-align:center;"><span class="cr-badge cr-badge--blue">{{ $row['delivered'] }}</span></td>
                     <td style="text-align:center;"><span class="cr-badge cr-badge--purple">{{ $row['sold'] }}</span></td>
                     <td style="text-align:center;"><span class="cr-badge cr-badge--gray">{{ $row['stock'] }}</span></td>
@@ -440,5 +510,94 @@
 
     @endif
     @endif
+
+    {{-- Modal detalle producto --}}
+    @if($showDetail && $detailProductId)
+    @php
+        $detail     = $this->getProductDetail();
+        $detProduct = $data->firstWhere('product_id', $detailProductId);
+    @endphp
+    <div class="cr-modal-overlay" wire:click.self="closeDetail">
+        <div class="cr-modal">
+            <div class="cr-modal-header">
+                <div>
+                    <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#a78bfa; margin-bottom:4px;">Detalle de entregas</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:#3b1f6e;">{{ $detProduct['product_name'] ?? '' }}</div>
+                    <div style="font-size:0.78rem; color:#7c3aed; margin-top:2px;">{{ $detProduct['category'] ?? '' }}</div>
+                </div>
+                <button wire:click="closeDetail" class="cr-modal-close">✕</button>
+            </div>
+
+            {{-- Resumen del producto --}}
+            @if($detProduct)
+            <div class="cr-modal-stats">
+                <div class="cr-mstat cr-mstat--blue"><div class="cr-mstat-n">{{ $detProduct['delivered'] }}</div><div class="cr-mstat-l">Entregados</div></div>
+                <div class="cr-mstat cr-mstat--purple"><div class="cr-mstat-n">{{ $detProduct['sold'] }}</div><div class="cr-mstat-l">Vendidos</div></div>
+                <div class="cr-mstat cr-mstat--gray"><div class="cr-mstat-n">{{ $detProduct['stock'] }}</div><div class="cr-mstat-l">En stock</div></div>
+                <div class="cr-mstat cr-mstat--green"><div class="cr-mstat-n">{{ $detProduct['paid_qty'] }}</div><div class="cr-mstat-l">Pagados</div></div>
+                <div class="cr-mstat cr-mstat--red"><div class="cr-mstat-n">{{ $detProduct['debe'] }}</div><div class="cr-mstat-l">Debe</div></div>
+            </div>
+            @endif
+
+            {{-- Tabla por entrega --}}
+            <div style="overflow-x:auto;">
+                <table class="cr-table" style="font-size:0.82rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; color:#7c3aed;">Fecha entrega</th>
+                            <th class="th-blue">Cant.</th>
+                            <th style="color:#555;">Precio u.</th>
+                            <th style="color:#555;">Subtotal</th>
+                            <th class="th-purple">Vendidos</th>
+                            <th class="th-green">Pagados</th>
+                            <th class="th-red">Debe</th>
+                            <th class="th-gray">Stock</th>
+                            <th style="text-align:left; color:#999;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($detail as $d)
+                        <tr>
+                            <td style="font-weight:600; color:#3b1f6e;">{{ $d['delivery_date'] }}</td>
+                            <td style="text-align:center;"><span class="cr-badge cr-badge--blue">{{ $d['quantity'] }}</span></td>
+                            <td style="text-align:center; color:#555;">${{ number_format($d['unit_price'], 0, ',', '.') }}</td>
+                            <td style="text-align:center; color:#555;">${{ number_format($d['subtotal'], 0, ',', '.') }}</td>
+                            <td style="text-align:center;"><span class="cr-badge cr-badge--purple">{{ $d['sold'] }}</span></td>
+                            <td style="text-align:center;"><span class="cr-badge cr-badge--green">{{ $d['paid'] }}</span></td>
+                            <td style="text-align:center;">
+                                @if($d['debe'] > 0) <span class="cr-badge cr-badge--red">{{ $d['debe'] }}</span>
+                                @else <span class="cr-ok">✓</span> @endif
+                            </td>
+                            <td style="text-align:center;"><span class="cr-badge cr-badge--gray">{{ $d['stock'] }}</span></td>
+                            <td>
+                                <span style="font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:50px; background:{{ $d['status']==='active' ? '#f0fdf4' : '#f5f5f5' }}; color:{{ $d['status']==='active' ? '#15803d' : '#666' }};">
+                                    {{ $d['status'] === 'active' ? 'Activa' : 'Cerrada' }}
+                                </span>
+                            </td>
+                        </tr>
+                        @if($d['notes'])
+                        <tr><td colspan="9" style="font-size:0.72rem; color:#999; padding-top:0; padding-left:16px;">📝 {{ $d['notes'] }}</td></tr>
+                        @endif
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td style="font-weight:800; color:#7c3aed;">TOTAL</td>
+                            <td style="text-align:center; font-weight:800; color:#1d4ed8;">{{ $detail->sum('quantity') }}</td>
+                            <td></td>
+                            <td style="text-align:center; font-weight:800; color:#555;">${{ number_format($detail->sum('subtotal'), 0, ',', '.') }}</td>
+                            <td style="text-align:center; font-weight:800; color:#7e22ce;">{{ $detail->sum('sold') }}</td>
+                            <td style="text-align:center; font-weight:800; color:#15803d;">{{ $detail->sum('paid') }}</td>
+                            <td style="text-align:center; font-weight:800; color:#b91c1c;">{{ $detail->sum('debe') }}</td>
+                            <td style="text-align:center; font-weight:800; color:#475569;">{{ $detail->sum('stock') }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
 </x-filament-panels::page>
