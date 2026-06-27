@@ -36,6 +36,7 @@ Route::post('/mayoristas/salir', [WholesaleController::class, 'logout'])->name('
 Route::get('/mayoristas/panel', [WholesaleController::class, 'portal'])->name('wholesale.portal');
 Route::get('/mayoristas/pedir-reposicion', [WholesaleController::class, 'restockForm'])->name('wholesale.restock');
 Route::post('/mayoristas/pedir-reposicion', [WholesaleController::class, 'restockStore'])->name('wholesale.restock.store');
+Route::post('/mayoristas/cambiar-clave', [WholesaleController::class, 'changePassword'])->name('wholesale.change-password');
 
 // Exportaciones admin (protegidas por middleware Filament)
 Route::get('/a33mgr/export/consignment-pdf', [ConsignmentExportController::class, 'pdf'])->name('export.consignment.pdf');

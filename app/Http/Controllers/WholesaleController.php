@@ -263,6 +263,31 @@ class WholesaleController extends Controller
             ->with('success', '¡Pedido de reposición enviado! Te contactamos pronto. 📦');
     }
 
+    public function changePassword(Request $request)
+    {
+        $wholesaler = $this->getWholesaler();
+        if (! $wholesaler) return redirect()->route('wholesale.login');
+
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => 'required|string|min:6|confirmed',
+        ], [
+            'current_password.required' => 'Ingresá tu contraseña actual.',
+            'password.required'         => 'Ingresá la nueva contraseña.',
+            'password.min'              => 'La nueva contraseña debe tener al menos 6 caracteres.',
+            'password.confirmed'        => 'Las contraseñas no coinciden.',
+        ]);
+
+        if (! Hash::check($request->current_password, $wholesaler->password)) {
+            return back()->withErrors(['current_password' => 'La contraseña actual es incorrecta.'])->withFragment('cambiar-clave');
+        }
+
+        $wholesaler->update(['password' => Hash::make($request->password)]);
+
+        return redirect()->route('wholesale.portal')
+            ->with('success', 'Contraseña actualizada correctamente.');
+    }
+
     private function getWholesaler(): ?WholesaleRequest
     {
         $id = session('wholesale_user');

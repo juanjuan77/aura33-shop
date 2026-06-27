@@ -146,6 +146,39 @@
             @endif
         </div>
 
+        {{-- ── CAMBIAR CONTRASEÑA ───────────────────────── --}}
+        <div id="cambiar-clave" style="margin-top:50px;">
+            <h2 style="font-family:var(--font-serif); font-size:1.4rem; color:var(--brand); font-weight:400; margin-bottom:20px;">
+                Cambiar contraseña
+            </h2>
+            <div style="background:var(--white); border:1px solid var(--border); border-radius:16px; padding:28px 32px; max-width:440px; box-shadow:var(--shadow-soft);">
+                @if($errors->has('current_password'))
+                    <div class="portal-alert-error" style="margin-bottom:16px;">{{ $errors->first('current_password') }}</div>
+                @endif
+                <form method="POST" action="{{ route('wholesale.change-password') }}">
+                    @csrf
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:block; margin-bottom:6px;">Contraseña actual</label>
+                            <input type="password" name="current_password" required
+                                style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--font-sans); font-size:0.9rem; outline:none; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:block; margin-bottom:6px;">Nueva contraseña</label>
+                            <input type="password" name="password" required minlength="6"
+                                style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--font-sans); font-size:0.9rem; outline:none; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); display:block; margin-bottom:6px;">Confirmar nueva contraseña</label>
+                            <input type="password" name="password_confirmation" required minlength="6"
+                                style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--font-sans); font-size:0.9rem; outline:none; box-sizing:border-box;">
+                        </div>
+                        <button type="submit" class="btn" style="align-self:flex-start;">Guardar nueva contraseña</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {{-- ── CONSIGNACIONES ────────────────────────────── --}}
         @if($wholesaler->is_consignment)
         @if($consignments->isNotEmpty())
