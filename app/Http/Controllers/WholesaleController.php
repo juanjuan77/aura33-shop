@@ -169,8 +169,7 @@ class WholesaleController extends Controller
                 $sid = (int)($s['consignment_item_id'] ?? 0);
                 foreach ($reportMap as $pid => &$row) {
                     if (in_array($sid, $row['_item_ids'])) {
-                        $row['sold']     += (int)($s['qty_sold'] ?? 0);
-                        $row['paid_qty'] += (int)($s['qty_paid'] ?? $s['qty_sold'] ?? 0);
+                        $row['sold'] += (int)($s['qty_sold'] ?? 0);
                         break;
                     }
                 }

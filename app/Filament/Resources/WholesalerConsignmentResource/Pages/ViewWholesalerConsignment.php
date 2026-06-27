@@ -32,14 +32,11 @@ class ViewWholesalerConsignment extends Page
             ->get();
     }
 
-    /**
-     * Stock agrupado por producto (nombre).
-     * Devuelve array: product_name => ['item_id' => int, 'stock' => int]
-     */
-    protected function getProductStock(): array
+    /** Stock disponible por producto (agrupado, sin mencionar entregas) */
+    protected function getProductStock(int $excludePaymentId = null): array
     {
         $consignments = $this->getConsignments();
-        $itemStock = [];
+        $itemStock    = [];
 
         foreach ($consignments as $c) {
             foreach ($c->items as $item) {
@@ -50,9 +47,9 @@ class ViewWholesalerConsignment extends Page
             }
         }
 
-        // Restar vendidos en pagos anteriores
         $payments = ConsignmentPayment::where('wholesale_request_id', $this->record->id)->get();
         foreach ($payments as $pay) {
+            if ($excludePaymentId && $pay->id === $excludePaymentId) continue;
             $sold = is_string($pay->items_sold) ? json_decode($pay->items_sold, true) : $pay->items_sold;
             if (! is_array($sold)) continue;
             foreach ($sold as $s) {
@@ -63,17 +60,71 @@ class ViewWholesalerConsignment extends Page
             }
         }
 
-        // Agrupar por nombre de producto, sumar stock, guardar el item_id con más stock
         $byProduct = [];
         foreach ($itemStock as $itemId => $data) {
-            if ($data['stock'] <= 0) continue;
             $name = $data['name'];
-            if (! isset($byProduct[$name]) || $data['stock'] > $byProduct[$name]['stock']) {
-                $byProduct[$name] = ['item_id' => $itemId, 'stock' => $data['stock']];
+            if (! isset($byProduct[$name])) {
+                $byProduct[$name] = ['item_id' => $itemId, 'stock' => 0];
+            }
+            $byProduct[$name]['stock'] += max(0, $data['stock']);
+            // Preferir el item_id con más stock
+            if ($data['stock'] > ($byProduct[$name]['stock_raw'] ?? 0)) {
+                $byProduct[$name]['item_id']    = $itemId;
+                $byProduct[$name]['stock_raw']  = $data['stock'];
             }
         }
 
-        return $byProduct; // ['Botella Fluorita Verde' => ['item_id' => 3, 'stock' => 7], ...]
+        return array_filter($byProduct, fn($v) => $v['stock'] > 0);
+    }
+
+    /** Formulario reutilizable para registrar/editar pago */
+    protected function paymentForm(array $stockOptions): array
+    {
+        return [
+            Forms\Components\TextInput::make('amount')
+                ->label('Monto cobrado ($)')
+                ->numeric()->required()->prefix('$'),
+
+            Forms\Components\Textarea::make('notes')
+                ->label('Notas (opcional)')
+                ->rows(2),
+
+            Forms\Components\FileUpload::make('receipt')
+                ->label('Comprobante (opcional)')
+                ->acceptedFileTypes(['image/jpeg','image/png','image/webp','application/pdf'])
+                ->directory('consignment-receipts')
+                ->maxSize(5120),
+
+            Forms\Components\Repeater::make('items_sold')
+                ->label('Productos vendidos (opcional — para control de stock)')
+                ->helperText('Si el cliente pagó una deuda anterior sin vender nada nuevo, dejá esto vacío.')
+                ->schema([
+                    Forms\Components\Select::make('product_name')
+                        ->label('Producto')
+                        ->options($stockOptions)
+                        ->required()
+                        ->searchable(),
+                    Forms\Components\TextInput::make('qty_sold')
+                        ->label('Unidades vendidas')
+                        ->numeric()->required()->minValue(1)->default(1),
+                ])
+                ->columns(2)
+                ->addActionLabel('+ Agregar producto')
+                ->defaultItems(0),
+        ];
+    }
+
+    /** Convierte items_sold del form a array para guardar */
+    protected function resolveItemsSold(array $formItems, array $stock): array
+    {
+        return collect($formItems)->map(function ($row) use ($stock) {
+            $name   = $row['product_name'];
+            $itemId = $stock[$name]['item_id'] ?? null;
+            return [
+                'consignment_item_id' => $itemId,
+                'qty_sold'            => (int)($row['qty_sold'] ?? 0),
+            ];
+        })->filter(fn($r) => $r['consignment_item_id'])->values()->toArray();
     }
 
     protected function getHeaderActions(): array
@@ -82,68 +133,20 @@ class ViewWholesalerConsignment extends Page
             Action::make('registrar_pago')
                 ->label('💳 Registrar pago')
                 ->color('success')
-                ->form(function () {
-                    $stock   = $this->getProductStock();
-                    $options = collect($stock)->mapWithKeys(
+                ->form(fn() => $this->paymentForm(
+                    collect($this->getProductStock())->mapWithKeys(
                         fn($v, $name) => [$name => $name . ' (stock: ' . $v['stock'] . ' u.)']
-                    )->toArray();
-
-                    return [
-                        Forms\Components\TextInput::make('amount')
-                            ->label('Monto cobrado ($)')
-                            ->numeric()->required()->prefix('$'),
-
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Notas (opcional)')
-                            ->rows(2),
-
-                        Forms\Components\FileUpload::make('receipt')
-                            ->label('Comprobante (opcional)')
-                            ->acceptedFileTypes(['image/jpeg','image/png','image/webp','application/pdf'])
-                            ->directory('consignment-receipts')
-                            ->maxSize(5120),
-
-                        Forms\Components\Repeater::make('items_sold')
-                            ->label('Productos vendidos')
-                            ->schema([
-                                Forms\Components\Select::make('product_name')
-                                    ->label('Producto')
-                                    ->options($options)
-                                    ->required()
-                                    ->searchable(),
-                                Forms\Components\TextInput::make('qty_sold')
-                                    ->label('Unidades vendidas')
-                                    ->numeric()->required()->minValue(1)->default(1),
-                                Forms\Components\TextInput::make('qty_paid')
-                                    ->label('Nos paga ahora')
-                                    ->numeric()->required()->minValue(0)->default(1),
-                            ])
-                            ->columns(3)
-                            ->addActionLabel('+ Agregar producto')
-                            ->defaultItems(1),
-                    ];
-                })
+                    )->toArray()
+                ))
                 ->action(function (array $data) {
                     $stock = $this->getProductStock();
-
-                    // Resolver consignment_item_id desde el nombre del producto
-                    $itemsSold = collect($data['items_sold'] ?? [])->map(function ($row) use ($stock) {
-                        $name   = $row['product_name'];
-                        $itemId = $stock[$name]['item_id'] ?? null;
-                        return [
-                            'consignment_item_id' => $itemId,
-                            'qty_sold'            => (int)$row['qty_sold'],
-                            'qty_paid'            => (int)$row['qty_paid'],
-                        ];
-                    })->toArray();
-
                     ConsignmentPayment::create([
                         'wholesale_request_id' => $this->record->id,
                         'consignment_id'       => null,
                         'amount'               => $data['amount'],
                         'notes'                => $data['notes'] ?? null,
                         'receipt'              => $data['receipt'] ?? null,
-                        'items_sold'           => $itemsSold,
+                        'items_sold'           => $this->resolveItemsSold($data['items_sold'] ?? [], $stock),
                     ]);
                     Notification::make()->title('Pago registrado')->success()->send();
                 }),
@@ -154,53 +157,36 @@ class ViewWholesalerConsignment extends Page
                 ->color('primary')
                 ->form([
                     Forms\Components\DatePicker::make('delivery_date')
-                        ->label('Fecha de entrega')
-                        ->default(now())
-                        ->required(),
+                        ->label('Fecha de entrega')->default(now())->required(),
                     Forms\Components\Select::make('status')
                         ->label('Estado')
                         ->options(['active' => 'Activa', 'closed' => 'Cerrada'])
-                        ->default('active')
-                        ->required(),
-                    Forms\Components\Textarea::make('notes')
-                        ->label('Notas')
-                        ->rows(2),
+                        ->default('active')->required(),
+                    Forms\Components\Textarea::make('notes')->label('Notas')->rows(2),
                     Forms\Components\Repeater::make('items')
                         ->label('Productos a entregar')
                         ->schema([
                             Forms\Components\Select::make('product_id')
                                 ->label('Producto')
                                 ->options(
-                                    Product::with('category')
-                                        ->orderBy('name')
-                                        ->get()
+                                    Product::with('category')->orderBy('name')->get()
                                         ->groupBy(fn($p) => $p->category?->name ?? 'Sin categoría')
-                                        ->map(fn($g) => $g->pluck('name', 'id'))
-                                        ->toArray()
+                                        ->map(fn($g) => $g->pluck('name', 'id'))->toArray()
                                 )
-                                ->searchable()
-                                ->required()
-                                ->reactive()
+                                ->searchable()->required()->reactive()
                                 ->afterStateUpdated(function ($state, callable $set) {
-                                    if ($state) {
-                                        $p = Product::find($state);
-                                        if ($p) {
-                                            $set('unit_price', $p->price_wholesale);
-                                            $set('product_name', $p->name);
-                                        }
+                                    if ($state && $p = Product::find($state)) {
+                                        $set('unit_price', $p->price_wholesale);
+                                        $set('product_name', $p->name);
                                     }
                                 }),
                             Forms\Components\TextInput::make('quantity')
-                                ->label('Cantidad')
-                                ->numeric()->required()->default(1),
+                                ->label('Cantidad')->numeric()->required()->default(1),
                             Forms\Components\TextInput::make('unit_price')
-                                ->label('Precio unit. ($)')
-                                ->numeric()->required()->prefix('$'),
+                                ->label('Precio unit. ($)')->numeric()->required()->prefix('$'),
                             Forms\Components\Hidden::make('product_name'),
                         ])
-                        ->columns(3)
-                        ->addActionLabel('+ Agregar producto')
-                        ->defaultItems(1),
+                        ->columns(3)->addActionLabel('+ Agregar producto')->defaultItems(1),
                 ])
                 ->action(function (array $data) {
                     $consignment = Consignment::create([
@@ -220,5 +206,19 @@ class ViewWholesalerConsignment extends Page
                     Notification::make()->title('Entrega registrada')->success()->send();
                 }),
         ];
+    }
+
+    /** Acciones inline por fila en el blade (editar/borrar pago) */
+    public function editPayment(int $paymentId): void
+    {
+        // handled via mountAction in blade
+    }
+
+    public function deletePayment(int $paymentId): void
+    {
+        ConsignmentPayment::where('id', $paymentId)
+            ->where('wholesale_request_id', $this->record->id)
+            ->delete();
+        Notification::make()->title('Pago eliminado')->success()->send();
     }
 }

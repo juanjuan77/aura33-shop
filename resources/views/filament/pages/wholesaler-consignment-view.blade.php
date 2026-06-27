@@ -67,6 +67,7 @@
                 <th style="text-align:right;">Monto</th>
                 <th>Comprobante</th>
                 <th>Notas</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -105,6 +106,14 @@
                     @endif
                 </td>
                 <td style="font-size:0.8rem; color:#888;">{{ $pay->notes ?: '—' }}</td>
+                <td style="white-space:nowrap;">
+                    <button
+                        wire:click="deletePayment({{ $pay->id }})"
+                        wire:confirm="¿Eliminar este pago? Podés volver a cargarlo con los datos correctos."
+                        style="font-size:0.7rem; color:#b91c1c; padding:3px 9px; border:1px solid #fecaca; border-radius:50px; background:white; cursor:pointer;">
+                        🗑 Eliminar
+                    </button>
+                </td>
             </tr>
             @endforeach
         </tbody>
