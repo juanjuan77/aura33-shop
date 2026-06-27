@@ -209,6 +209,24 @@
             </div>
             @endif
 
+            {{-- Pendientes de pago --}}
+            @php $pendientes = $reportByProduct->filter(fn($r) => $r['debe'] > 0); @endphp
+            @if($pendientes->isNotEmpty())
+            <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:14px; padding:18px 22px; margin-bottom:32px;">
+                <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#92400e; margin-bottom:12px;">
+                    ⚠️ Unidades vendidas pendientes de pago
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    @foreach($pendientes as $r)
+                    <div style="background:#fef3c7; border:1px solid #fcd34d; border-radius:50px; padding:6px 16px; font-size:0.82rem; color:#78350f; font-weight:600;">
+                        {{ $r['product_name'] }} — <strong>{{ $r['debe'] }} u.</strong>
+                        <span style="font-weight:400; color:#92400e;"> (${{ number_format($r['debe_amount'],0,',','.') }})</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             {{-- 3. MIS PAGOS --}}
             <div class="cp-section">
                 <div class="cp-section-title">💳 Mis pagos realizados</div>
