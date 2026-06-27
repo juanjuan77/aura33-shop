@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Consignment;
 
 class WholesaleRequest extends Model
 {
@@ -50,5 +51,10 @@ class WholesaleRequest extends Model
         return $this->hasMany(Order::class, 'customer_email', 'email')
             ->where('customer_type', 'wholesale')
             ->latest();
+    }
+
+    public function consignments()
+    {
+        return $this->hasMany(Consignment::class, 'wholesale_request_id');
     }
 }

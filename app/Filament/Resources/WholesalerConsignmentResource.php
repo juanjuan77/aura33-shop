@@ -20,7 +20,7 @@ class WholesalerConsignmentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(WholesaleRequest::where('status', 'approved')->withCount('consignments')->with('consignments.payments'))
+            ->query(WholesaleRequest::where('status', 'approved')->withCount('consignments')->with('consignments.items', 'consignments.payments'))
             ->columns([
                 Tables\Columns\TextColumn::make('business_name')
                     ->label('Local')
