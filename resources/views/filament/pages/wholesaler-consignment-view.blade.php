@@ -126,7 +126,7 @@
     <tbody>
         @foreach($deliveries as $d)
         <tr>
-            <td>{{ $d->created_at->format('d/m/Y') }}</td>
+            <td>{{ ($d->date ?? $d->created_at)->format('d/m/Y') }}</td>
             <td><strong>{{ $d->quantity }}</strong></td>
             <td style="color:#888; font-size:0.83rem;">{{ $d->notes ?: '—' }}</td>
         </tr>
@@ -153,7 +153,7 @@
     <tbody>
         @foreach($payments as $p)
         <tr>
-            <td>{{ $p->created_at->format('d/m/Y') }}</td>
+            <td>{{ ($p->date ?? $p->created_at)->format('d/m/Y') }}</td>
             <td>{{ $p->product_name }}</td>
             <td>{{ $p->quantity }}</td>
             <td><strong>${{ number_format($p->amount, 0, ',', '.') }}</strong></td>

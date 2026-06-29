@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class WholesaleDelivery extends Model
 {
-    protected $fillable = ['wholesale_request_id', 'quantity', 'notes'];
+    protected $fillable = ['wholesale_request_id', 'date', 'quantity', 'notes'];
+    protected $casts = ['date' => 'date'];
 
     public function wholesaler()
     {

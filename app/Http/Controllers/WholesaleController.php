@@ -119,10 +119,10 @@ class WholesaleController extends Controller
         if (! $wholesaler) return redirect()->route('wholesale.login');
 
         $deliveries = WholesaleDelivery::where('wholesale_request_id', $wholesaler->id)
-            ->latest()->get();
+            ->orderByDesc('date')->orderByDesc('created_at')->get();
 
         $payments = WholesalePayment::where('wholesale_request_id', $wholesaler->id)
-            ->latest()->get();
+            ->orderByDesc('date')->orderByDesc('created_at')->get();
 
         $totalDelivered = $deliveries->sum('quantity');
         $totalSold      = $payments->sum('quantity');

@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class WholesalePayment extends Model
 {
-    protected $fillable = ['wholesale_request_id', 'product_name', 'quantity', 'amount', 'receipt'];
+    protected $fillable = ['wholesale_request_id', 'date', 'product_name', 'quantity', 'amount', 'receipt'];
+    protected $casts = ['date' => 'date'];
 
     public function wholesaler()
     {

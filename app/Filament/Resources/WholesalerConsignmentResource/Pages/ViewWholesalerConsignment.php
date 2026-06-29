@@ -31,13 +31,13 @@ class ViewWholesalerConsignment extends Page
     public function getDeliveries()
     {
         return WholesaleDelivery::where('wholesale_request_id', $this->record->id)
-            ->latest()->get();
+            ->orderByDesc('date')->orderByDesc('created_at')->get();
     }
 
     public function getPayments()
     {
         return WholesalePayment::where('wholesale_request_id', $this->record->id)
-            ->latest()->get();
+            ->orderByDesc('date')->orderByDesc('created_at')->get();
     }
 
     public function getTotals(): array
@@ -61,6 +61,11 @@ class ViewWholesalerConsignment extends Page
                 ->color('primary')
                 ->icon('heroicon-o-truck')
                 ->form([
+                    Forms\Components\DatePicker::make('date')
+                        ->label('Fecha de entrega')
+                        ->default(now())
+                        ->required()
+                        ->displayFormat('d/m/Y'),
                     Forms\Components\TextInput::make('quantity')
                         ->label('Cantidad de botellas')
                         ->numeric()
@@ -74,6 +79,7 @@ class ViewWholesalerConsignment extends Page
                 ->action(function (array $data) {
                     WholesaleDelivery::create([
                         'wholesale_request_id' => $this->record->id,
+                        'date'                 => $data['date'],
                         'quantity'             => $data['quantity'],
                         'notes'                => $data['notes'] ?? null,
                     ]);
@@ -84,6 +90,11 @@ class ViewWholesalerConsignment extends Page
                 ->label('💳 Registrar pago')
                 ->color('success')
                 ->form([
+                    Forms\Components\DatePicker::make('date')
+                        ->label('Fecha del pago')
+                        ->default(now())
+                        ->required()
+                        ->displayFormat('d/m/Y'),
                     Forms\Components\TextInput::make('product_name')
                         ->label('Producto')
                         ->placeholder('Ej: Botella violeta 500ml')
@@ -109,6 +120,7 @@ class ViewWholesalerConsignment extends Page
                 ->action(function (array $data) {
                     WholesalePayment::create([
                         'wholesale_request_id' => $this->record->id,
+                        'date'                 => $data['date'],
                         'product_name'         => $data['product_name'],
                         'quantity'             => $data['quantity'],
                         'amount'               => $data['amount'],
