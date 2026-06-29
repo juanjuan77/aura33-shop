@@ -61,8 +61,16 @@
         {{-- Resumen --}}
         <div class="portal-info-grid" style="margin-top:32px;">
             <div class="portal-info-card">
-                <span class="portal-info-label">Botellas recibidas</span>
+                <span class="portal-info-label">Recibidas</span>
                 <span class="portal-info-val">{{ $totalDelivered }}</span>
+            </div>
+            <div class="portal-info-card">
+                <span class="portal-info-label">Vendidas</span>
+                <span class="portal-info-val">{{ $totalSold }}</span>
+            </div>
+            <div class="portal-info-card" style="border-top: 3px solid #22c55e;">
+                <span class="portal-info-label">Quedan en stock</span>
+                <span class="portal-info-val" style="color:#15803d;">{{ $quedan }}</span>
             </div>
             <div class="portal-info-card">
                 <span class="portal-info-label">Total pagado</span>

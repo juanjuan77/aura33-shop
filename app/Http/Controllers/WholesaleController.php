@@ -125,10 +125,12 @@ class WholesaleController extends Controller
             ->latest()->get();
 
         $totalDelivered = $deliveries->sum('quantity');
+        $totalSold      = $payments->sum('quantity');
+        $quedan         = max(0, $totalDelivered - $totalSold);
         $totalPaid      = $payments->sum('amount');
 
         return view('shop.wholesale.portal', compact(
-            'wholesaler', 'deliveries', 'payments', 'totalDelivered', 'totalPaid'
+            'wholesaler', 'deliveries', 'payments', 'totalDelivered', 'totalSold', 'quedan', 'totalPaid'
         ));
     }
 

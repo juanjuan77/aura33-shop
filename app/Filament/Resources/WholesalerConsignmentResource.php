@@ -3,7 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WholesalerConsignmentResource\Pages;
-use App\Models\ConsignmentPayment;
+use App\Models\WholesaleDelivery;
+use App\Models\WholesalePayment;
 use App\Models\WholesaleRequest;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -11,65 +12,53 @@ use Filament\Tables\Table;
 
 class WholesalerConsignmentResource extends Resource
 {
-    protected static ?string $model = WholesaleRequest::class;
+    protected static ?string $model           = WholesaleRequest::class;
     protected static ?string $navigationIcon  = 'heroicon-o-building-storefront';
     protected static ?string $navigationLabel = 'Consignaciones';
-    protected static ?string $modelLabel      = 'Local';
-    protected static ?string $pluralModelLabel = 'Consignaciones por local';
-    protected static ?int    $navigationSort  = 5;
-    protected static bool    $shouldRegisterNavigation = false;
+    protected static ?string $modelLabel      = 'Mayorista';
+    protected static ?string $pluralModelLabel = 'Consignaciones';
+    protected static ?int    $navigationSort  = 3;
 
     public static function table(Table $table): Table
     {
         return $table
-            ->query(WholesaleRequest::where('status', 'approved')->withCount('consignments')->with('consignments.items', 'consignments.payments'))
+            ->query(WholesaleRequest::where('status', 'approved'))
             ->columns([
                 Tables\Columns\TextColumn::make('business_name')
-                    ->label('Local')
+                    ->label('Local / Mayorista')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold')
-                    ->color('primary'),
+                    ->weight('bold'),
                 Tables\Columns\TextColumn::make('city')
-                    ->label('Ciudad'),
-                Tables\Columns\TextColumn::make('consignments_count')
-                    ->label('Entregas')
+                    ->label('Ciudad')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('entregadas')
+                    ->label('Entregadas')
+                    ->getStateUsing(fn($record) =>
+                        WholesaleDelivery::where('wholesale_request_id', $record->id)->sum('quantity')
+                    )
                     ->badge()
                     ->color('info'),
-                Tables\Columns\TextColumn::make('total_entregado')
-                    ->label('Total entregado')
+                Tables\Columns\TextColumn::make('vendidas')
+                    ->label('Vendidas')
                     ->getStateUsing(fn($record) =>
-                        '$' . number_format(
-                            $record->consignments->sum(fn($c) => $c->items->sum(fn($i) => $i->quantity * $i->unit_price)),
-                            0, ',', '.'
-                        )
-                    ),
-                Tables\Columns\TextColumn::make('total_cobrado')
-                    ->label('Total cobrado')
-                    ->getStateUsing(fn($record) =>
-                        '$' . number_format(
-                            ConsignmentPayment::where('wholesale_request_id', $record->id)->sum('amount'),
-                            0, ',', '.'
-                        )
+                        WholesalePayment::where('wholesale_request_id', $record->id)->sum('quantity')
                     )
-                    ->color('success'),
-                Tables\Columns\TextColumn::make('saldo')
-                    ->label('Saldo pendiente')
+                    ->badge()
+                    ->color('warning'),
+                Tables\Columns\TextColumn::make('quedan')
+                    ->label('Quedan')
                     ->getStateUsing(function ($record) {
-                        $entregado = $record->consignments->sum(fn($c) => $c->items->sum(fn($i) => $i->quantity * $i->unit_price));
-                        $cobrado   = ConsignmentPayment::where('wholesale_request_id', $record->id)->sum('amount');
-                        $saldo     = $entregado - $cobrado;
-                        return $saldo > 0 ? '$' . number_format($saldo, 0, ',', '.') : '✓ Al día';
+                        $entregadas = WholesaleDelivery::where('wholesale_request_id', $record->id)->sum('quantity');
+                        $vendidas   = WholesalePayment::where('wholesale_request_id', $record->id)->sum('quantity');
+                        return max(0, $entregadas - $vendidas);
                     })
-                    ->color(function ($record) {
-                        $entregado = $record->consignments->sum(fn($c) => $c->items->sum(fn($i) => $i->quantity * $i->unit_price));
-                        $cobrado   = ConsignmentPayment::where('wholesale_request_id', $record->id)->sum('amount');
-                        return ($entregado - $cobrado) > 0 ? 'danger' : 'success';
-                    }),
+                    ->badge()
+                    ->color('success'),
             ])
             ->actions([
                 Tables\Actions\Action::make('ver')
-                    ->label('Ver entregas')
+                    ->label('Ver detalle')
                     ->icon('heroicon-o-eye')
                     ->url(fn($record) => static::getUrl('view', ['record' => $record])),
             ])

@@ -20,6 +20,7 @@ class WholesalePaymentResource extends Resource
     protected static ?string $pluralModelLabel = 'Pagos';
     protected static ?string $navigationGroup = 'Mayoristas';
     protected static ?int $navigationSort = 2;
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {
