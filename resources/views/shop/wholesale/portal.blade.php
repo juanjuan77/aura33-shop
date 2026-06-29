@@ -15,6 +15,9 @@
                 </p>
             </div>
             <div class="portal-header-actions">
+                <a href="{{ route('wholesale.restock') }}" class="btn" style="background:var(--accent,#7c3aed); white-space:nowrap;">
+                    📦 Pedir reposición
+                </a>
                 <div class="profile-dropdown-wrap">
                     <button class="profile-dropdown-trigger btn-outline-muted" onclick="toggleProfileMenu()" type="button">
                         👤 {{ $wholesaler->name }}
