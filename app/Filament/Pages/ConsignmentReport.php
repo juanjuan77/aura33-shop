@@ -17,6 +17,7 @@ class ConsignmentReport extends Page
     protected static ?string $navigationLabel = 'Informe Consignación';
     protected static ?string $title           = 'Informe de Consignación';
     protected static ?int    $navigationSort  = 7;
+    protected static bool    $shouldRegisterNavigation = false;
     protected static string  $view            = 'filament.pages.consignment-report';
 
     public ?int    $selectedWholesaler = null;

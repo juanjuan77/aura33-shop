@@ -14,6 +14,7 @@ class RestockRequests extends Page
     protected static ?string $navigationLabel = 'Pedidos Reposición';
     protected static ?string $title           = 'Pedidos de Reposición';
     protected static ?int    $navigationSort  = 8;
+    protected static bool    $shouldRegisterNavigation = false;
     protected static string  $view            = 'filament.pages.restock-requests';
 
     public function getRequests(): Collection

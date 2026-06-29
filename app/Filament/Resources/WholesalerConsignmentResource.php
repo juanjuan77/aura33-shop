@@ -17,6 +17,7 @@ class WholesalerConsignmentResource extends Resource
     protected static ?string $modelLabel      = 'Local';
     protected static ?string $pluralModelLabel = 'Consignaciones por local';
     protected static ?int    $navigationSort  = 5;
+    protected static bool    $shouldRegisterNavigation = false;
 
     public static function table(Table $table): Table
     {
