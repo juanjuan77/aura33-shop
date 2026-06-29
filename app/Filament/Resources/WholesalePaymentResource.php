@@ -44,10 +44,13 @@ class WholesalePaymentResource extends Resource
                 ->numeric()
                 ->prefix('$')
                 ->required(),
-            Forms\Components\TextInput::make('receipt')
+            Forms\Components\FileUpload::make('receipt')
                 ->label('Comprobante')
-                ->placeholder('Número o referencia del comprobante')
-                ->maxLength(255),
+                ->disk('public')
+                ->directory('wholesale-payment-receipts')
+                ->image()
+                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+                ->columnSpanFull(),
         ]);
     }
 
@@ -68,9 +71,10 @@ class WholesalePaymentResource extends Resource
                     ->label('Importe')
                     ->money('ARS')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('receipt')
+                Tables\Columns\ImageColumn::make('receipt')
                     ->label('Comprobante')
-                    ->placeholder('-'),
+                    ->disk('public')
+                    ->default(null),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Fecha')
                     ->date('d/m/Y')

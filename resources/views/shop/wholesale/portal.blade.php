@@ -127,7 +127,13 @@
                             <td>{{ $p->product_name }}</td>
                             <td>{{ $p->quantity }}</td>
                             <td><strong>${{ number_format($p->amount, 0, ',', '.') }}</strong></td>
-                            <td style="color:var(--muted); font-size:0.88rem;">{{ $p->receipt ?: '—' }}</td>
+                            <td>
+                                @if($p->receipt)
+                                    <a href="{{ asset('storage/' . $p->receipt) }}" target="_blank" style="color:var(--brand); font-size:0.88rem;">Ver comprobante</a>
+                                @else
+                                    <span style="color:var(--muted);">—</span>
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
