@@ -78,7 +78,7 @@
             @if($deliveries->isEmpty())
                 <p style="color:var(--muted); font-size:0.9rem;">Todavía no hay entregas registradas.</p>
             @else
-            <div style="overflow-x:auto;">
+            <div class="portal-table-wrap">
                 <table class="portal-table">
                     <thead>
                         <tr>
@@ -109,7 +109,7 @@
             @if($payments->isEmpty())
                 <p style="color:var(--muted); font-size:0.9rem;">Todavía no hay pagos registrados.</p>
             @else
-            <div style="overflow-x:auto;">
+            <div class="portal-table-wrap">
                 <table class="portal-table">
                     <thead>
                         <tr>
@@ -144,32 +144,201 @@
 
     </div>
 </div>
+@endsection
 
+@push('styles')
 <style>
+.portal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+}
+.portal-title {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--brand);
+    font-weight: 400;
+    margin: 6px 0 8px;
+}
+.portal-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+}
+.btn-outline-muted {
+    padding: 10px 20px;
+    border: 1px solid rgba(74,59,82,0.2);
+    border-radius: 50px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    cursor: pointer;
+    background: transparent;
+    transition: all 0.2s;
+    font-family: var(--font-sans);
+}
+.btn-outline-muted:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+}
+.portal-alert-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    margin-bottom: 28px;
+}
+.portal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+}
+.portal-info-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.portal-info-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+}
+.portal-info-val {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--brand);
+    font-weight: 400;
+}
+
+/* ── Tablas de entregas/pagos ── */
+.portal-table-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+}
 .portal-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
 }
 .portal-table th {
+    background: rgba(74,59,82,0.04);
     text-align: left;
-    padding: 10px 14px;
-    border-bottom: 2px solid var(--border, #e5e7eb);
-    color: var(--muted);
-    font-weight: 500;
-    font-size: 0.8rem;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    color: var(--brand);
+    font-weight: 600;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: .05em;
+    letter-spacing: 0.08em;
 }
 .portal-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border, #f3f4f6);
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(74,59,82,0.04);
     vertical-align: middle;
+    color: var(--text);
 }
 .portal-table tr:last-child td { border-bottom: none; }
-.portal-table tr:hover td { background: var(--bg-soft, #fafafa); }
-</style>
+.portal-table tr:hover td { background: rgba(74,59,82,0.015); }
 
+/* ── Profile dropdown ── */
+.profile-dropdown-wrap { position: relative; }
+.profile-dropdown-trigger { cursor: pointer; white-space: nowrap; }
+.profile-dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(74,59,82,0.13);
+    min-width: 260px;
+    z-index: 200;
+    overflow: hidden;
+}
+.profile-dropdown-menu.open { display: block; }
+.profile-dropdown-name {
+    padding: 12px 16px 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+}
+.profile-dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
+.profile-dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    color: var(--brand);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: background 0.15s;
+}
+.profile-dropdown-item:hover { background: rgba(74,59,82,0.05); }
+.profile-dropdown-item--danger { color: #b91c1c; }
+.profile-dropdown-item--danger:hover { background: #fff5f5; }
+.profile-pw-form { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.profile-pw-input {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: var(--font-sans);
+    outline: none;
+    box-sizing: border-box;
+    color: var(--brand);
+}
+.profile-pw-input:focus { border-color: var(--brand); }
+.profile-pw-btn {
+    width: 100%;
+    padding: 8px;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: opacity 0.2s;
+}
+.profile-pw-btn:hover { opacity: 0.85; }
+.profile-pw-error {
+    font-size: 0.8rem;
+    color: #b91c1c;
+    margin: 0 0 8px;
+}
+</style>
+@endpush
+
+@push('scripts')
 <script>
 function toggleProfileMenu() {
     document.getElementById('profileMenu').classList.toggle('open');
@@ -185,7 +354,9 @@ document.addEventListener('click', function(e) {
     }
 });
 @if($errors->has('current_password') || session('show_password_form'))
-document.getElementById('profileMenu').classList.add('open');
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('profileMenu').classList.add('open');
+});
 @endif
 </script>
-@endsection
+@endpush
