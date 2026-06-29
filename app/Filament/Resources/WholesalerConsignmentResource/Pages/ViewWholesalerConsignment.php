@@ -16,7 +16,7 @@ class ViewWholesalerConsignment extends Page
     protected static string $resource = WholesalerConsignmentResource::class;
     protected static string $view     = 'filament.pages.wholesaler-consignment-view';
 
-    public WholesaleRequest $record;
+    public $record;
 
     public function mount(int|string $record): void
     {

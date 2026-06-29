@@ -65,6 +65,11 @@ class WholesalerConsignmentResource extends Resource
             ->defaultSort('business_name');
     }
 
+    public static function resolveRecordRouteBinding(int|string $key): ?\Illuminate\Database\Eloquent\Model
+    {
+        return WholesaleRequest::find($key);
+    }
+
     public static function getRelations(): array { return []; }
 
     public static function getPages(): array
