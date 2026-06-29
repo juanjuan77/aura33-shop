@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\WholesaleDelivery;
 use App\Models\WholesalePayment;
 use App\Models\WholesaleRequest;
+use App\Notifications\NewWholesaleRequestNotification;
 use App\Notifications\RestockRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -53,7 +54,15 @@ class WholesaleController extends Controller
 
         $data['password'] = Hash::make($data['password']);
 
-        WholesaleRequest::create($data);
+        $wholesaler = WholesaleRequest::create($data);
+
+        try {
+            $adminEmail = config('mail.from.address', 'ventas@aura33.com.ar');
+            Notification::route('mail', $adminEmail)
+                ->notify(new NewWholesaleRequestNotification($wholesaler));
+        } catch (\Exception $e) {
+            // no interrumpir si falla el mail
+        }
 
         return redirect()->route('wholesale.thanks')
             ->with('success', '¡Solicitud enviada! Te contactaremos en 48 horas hábiles.');
