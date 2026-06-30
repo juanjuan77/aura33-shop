@@ -526,6 +526,9 @@
             <span>&copy; {{ date('Y') }} AURA33 · Cristales & Energía · Todos los derechos reservados.</span>
             <span>Hecho con intención espiritual ✨</span>
         </div>
+        <div style="text-align:center; padding: 10px 0 16px; font-size:0.75rem; color:rgba(255,255,255,0.3);">
+            Desarrollado por <a href="https://celvix.com.ar/" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.45); text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.8)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">celvix.com.ar</a>
+        </div>
     </footer>
 
     <a href="https://wa.me/5493400441832" class="wa-float" target="_blank" title="Escribinos por WhatsApp">
