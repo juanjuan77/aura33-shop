@@ -18,7 +18,7 @@
             <a href="{{ route('shop') }}" class="btn">Ver Tienda</a>
 
             {{-- CTA Oráculo --}}
-            <a href="#oraculo" class="hero-oracle-cta" onclick="event.preventDefault(); document.getElementById('oraculo').scrollIntoView({behavior:'smooth'});">
+            <a href="#" class="hero-oracle-cta" onclick="event.preventDefault(); openOraclePopup();">
                 <div class="hero-oracle-cards">
                     <div class="hero-oracle-card hoc-1">
                         <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg">
