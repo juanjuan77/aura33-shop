@@ -19,10 +19,17 @@
 
             {{-- Oráculo embebido --}}
             <div class="hero-oracle-embed">
-                <p class="hero-oracle-embed-label">🔮 Saca un mensajito del oráculo ✨</p>
+                <p class="hero-oracle-embed-label">✦ Un mensajito del oráculo ✦</p>
 
                 {{-- Idle: carta boca abajo --}}
                 <div class="hero-oracle-idle" id="heroOracleIdle">
+                    <div class="hero-oracle-sparkles" aria-hidden="true">
+                        <span class="ho-spark">✦</span>
+                        <span class="ho-spark">·</span>
+                        <span class="ho-spark">✧</span>
+                        <span class="ho-spark">✦</span>
+                        <span class="ho-spark">·</span>
+                    </div>
                     <div class="hero-oracle-card-wrap" onclick="heroDrawCard()" title="Sacar mi carta">
                         <svg viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg" class="hero-oracle-cardsvg">
                             <defs>
@@ -422,96 +429,155 @@ if (!$lunarProduct) {
 <style>
 /* ── Hero Oráculo Embebido ─────────────────────── */
 .hero-oracle-embed {
-    margin-top: 28px;
-    padding: 20px 22px;
-    background: linear-gradient(135deg, rgba(107,79,122,0.07), rgba(147,51,234,0.04));
-    border: 1px solid rgba(107,79,122,0.15);
-    border-radius: 18px;
-    max-width: 380px;
+    margin-top: 32px;
+    max-width: 340px;
+    position: relative;
 }
 .hero-oracle-embed-label {
     font-family: var(--font-serif);
-    font-size: 1rem;
-    color: var(--brand);
-    margin: 0 0 16px;
+    font-size: 0.92rem;
+    color: var(--brand-light);
+    margin: 0 0 18px;
     font-style: italic;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
 }
 .hero-oracle-embed-sublabel {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: var(--muted);
-    margin: 12px 0 0;
+    margin: 14px 0 0;
     text-align: center;
+    font-style: italic;
 }
-.hero-oracle-idle { display: flex; align-items: center; gap: 20px; }
+/* Idle: carta flotante con partículas */
+.hero-oracle-idle {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+}
+.hero-oracle-sparkles {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    overflow: visible;
+}
+.ho-spark {
+    position: absolute;
+    font-size: 0.9rem;
+    animation: hoSparkFloat linear infinite;
+    opacity: 0;
+}
+.ho-spark:nth-child(1) { left: 85px;  top: 5px;  animation-duration: 3.2s; animation-delay: 0s; }
+.ho-spark:nth-child(2) { left: 110px; top: 30px; animation-duration: 4.1s; animation-delay: 1.1s; }
+.ho-spark:nth-child(3) { left: 70px;  top: 55px; animation-duration: 3.7s; animation-delay: 0.6s; }
+.ho-spark:nth-child(4) { left: 120px; top: 60px; animation-duration: 4.5s; animation-delay: 1.8s; }
+.ho-spark:nth-child(5) { left: 60px;  top: 20px; animation-duration: 3.9s; animation-delay: 2.3s; }
+@keyframes hoSparkFloat {
+    0%   { opacity: 0;   transform: translateY(0)    scale(0.6); }
+    30%  { opacity: 0.8; transform: translateY(-8px)  scale(1); }
+    70%  { opacity: 0.6; transform: translateY(-18px) scale(0.9); }
+    100% { opacity: 0;   transform: translateY(-28px) scale(0.5); }
+}
 .hero-oracle-card-wrap {
     cursor: pointer;
-    flex-shrink: 0;
-    width: 80px;
-    transition: transform 0.25s ease;
-    filter: drop-shadow(0 6px 16px rgba(45,31,53,0.35));
+    width: 88px;
+    position: relative;
+    animation: hoFloat 3.5s ease-in-out infinite, hoGlow 3.5s ease-in-out infinite;
+    transition: filter 0.3s, transform 0.3s;
 }
-.hero-oracle-card-wrap:hover { transform: translateY(-4px) rotate(-2deg); }
+.hero-oracle-card-wrap:hover {
+    animation-play-state: paused;
+    transform: scale(1.06) rotate(-3deg) !important;
+    filter: drop-shadow(0 16px 36px rgba(147,51,234,0.7)) drop-shadow(0 0 12px rgba(255,220,160,0.4));
+}
+@keyframes hoFloat {
+    0%, 100% { transform: translateY(0)    rotate(-1.5deg); }
+    50%       { transform: translateY(-8px) rotate(1.5deg); }
+}
+@keyframes hoGlow {
+    0%, 100% { filter: drop-shadow(0 8px 20px rgba(107,79,122,0.4)) drop-shadow(0 0 6px rgba(255,220,160,0.1)); }
+    50%       { filter: drop-shadow(0 12px 28px rgba(147,51,234,0.55)) drop-shadow(0 0 14px rgba(255,220,160,0.25)); }
+}
 .hero-oracle-cardsvg { display: block; width: 100%; border-radius: 10px; }
 .hero-oracle-card-hint {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: var(--muted);
     text-align: center;
-    margin-top: 6px;
-    opacity: 0.7;
+    margin-top: 10px;
+    font-style: italic;
+    opacity: 0.65;
+    letter-spacing: 0.02em;
 }
 /* Shuffling */
+.hero-oracle-shuffling {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+}
 .hero-oshuffle {
     position: relative;
-    width: 80px;
-    height: 112px;
-    margin: 0 auto;
+    width: 88px;
+    height: 120px;
 }
 .hero-oshuffle-c {
     position: absolute;
-    width: 60px;
-    height: 90px;
-    border-radius: 8px;
+    width: 64px;
+    height: 96px;
+    border-radius: 9px;
     background: linear-gradient(135deg, #7a5a8a, #2d1f35);
     border: 1px solid rgba(255,220,160,0.2);
+    box-shadow: 0 4px 14px rgba(45,31,53,0.4);
 }
-.hero-oshuffle-c.c1 { top:0; left:10px; animation: hoShuffle 0.7s ease-in-out infinite alternate; }
-.hero-oshuffle-c.c2 { top:6px; left:5px; animation: hoShuffle 0.7s 0.1s ease-in-out infinite alternate-reverse; opacity:0.75; }
-.hero-oshuffle-c.c3 { top:12px; left:0; animation: hoShuffle 0.7s 0.2s ease-in-out infinite alternate; opacity:0.5; }
-@keyframes hoShuffle { from { transform: rotate(-6deg); } to { transform: rotate(6deg) translateX(8px); } }
+.hero-oshuffle-c.c1 { top:0;   left:12px; animation: hoShuffle 0.65s ease-in-out infinite alternate; }
+.hero-oshuffle-c.c2 { top:8px; left:6px;  animation: hoShuffle 0.65s 0.12s ease-in-out infinite alternate-reverse; opacity:0.7; }
+.hero-oshuffle-c.c3 { top:16px;left:0;    animation: hoShuffle 0.65s 0.24s ease-in-out infinite alternate; opacity:0.45; }
+@keyframes hoShuffle { from { transform: rotate(-8deg); } to { transform: rotate(8deg) translateX(10px); } }
 /* Result */
+.hero-oracle-result {
+    animation: hoReveal 0.5s ease-out both;
+}
+@keyframes hoReveal { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 .hero-oracle-result-card {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 2px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, rgba(107,79,122,0.08), rgba(147,51,234,0.04));
+    border-left: 3px solid rgba(147,51,234,0.35);
+    border-radius: 0 12px 12px 0;
 }
-.hero-oracle-result-symbol { font-size: 2rem; line-height: 1; }
+.hero-oracle-result-symbol { font-size: 1.8rem; line-height: 1; margin-bottom: 4px; }
 .hero-oracle-result-keyword {
     font-family: var(--font-serif);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--brand);
     font-weight: 600;
-    letter-spacing: 0.03em;
 }
 .hero-oracle-result-msg {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--text);
-    line-height: 1.55;
-    margin: 4px 0 12px;
+    line-height: 1.6;
+    margin: 6px 0 10px;
     font-style: italic;
+    opacity: 0.85;
 }
 .hero-oracle-again {
     background: none;
-    border: 1px solid rgba(107,79,122,0.3);
-    border-radius: 50px;
-    padding: 6px 16px;
-    font-size: 0.78rem;
-    color: var(--brand);
+    border: none;
+    padding: 0;
+    font-size: 0.75rem;
+    color: rgba(147,51,234,0.6);
     cursor: pointer;
     font-family: var(--font-sans);
-    transition: all 0.2s;
+    font-style: italic;
+    transition: color 0.2s;
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
-.hero-oracle-again:hover { background: rgba(107,79,122,0.08); }
+.hero-oracle-again:hover { color: var(--brand); }
 
 /* ── Hero ─────────────────────────────────────── */
 .hero {
