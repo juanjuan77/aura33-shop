@@ -17,42 +17,57 @@
             <p class="hero-desc">Torres, oráculos y herramientas holísticas para quienes saben y sienten que el agua y la energía cambian todo.</p>
             <a href="{{ route('shop') }}" class="btn">Ver Tienda</a>
 
-            {{-- CTA Oráculo --}}
-            <a href="#" class="hero-oracle-cta" onclick="event.preventDefault(); openOraclePopup();">
-                <div class="hero-oracle-cards">
-                    <div class="hero-oracle-card hoc-1">
-                        <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg">
-                            <defs><radialGradient id="hg1" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#9b6bb5"/><stop offset="100%" stop-color="#3b1f6e"/></radialGradient></defs>
-                            <rect width="80" height="120" rx="8" fill="url(#hg1)"/>
-                            <rect x="5" y="5" width="70" height="110" rx="5" fill="none" stroke="rgba(255,220,180,0.3)" stroke-width="1"/>
-                            <text x="40" y="58" text-anchor="middle" font-size="26">🔮</text>
-                            <text x="40" y="80" text-anchor="middle" font-family="Georgia" font-size="6" fill="rgba(255,220,180,0.7)" letter-spacing="2">AURA33</text>
+            {{-- Oráculo embebido --}}
+            <div class="hero-oracle-embed">
+                <p class="hero-oracle-embed-label">🔮 Saca un mensajito del oráculo ✨</p>
+
+                {{-- Idle: carta boca abajo --}}
+                <div class="hero-oracle-idle" id="heroOracleIdle">
+                    <div class="hero-oracle-card-wrap" onclick="heroDrawCard()" title="Sacar mi carta">
+                        <svg viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg" class="hero-oracle-cardsvg">
+                            <defs>
+                                <radialGradient id="hoBg" cx="50%" cy="40%" r="65%">
+                                    <stop offset="0%" stop-color="#7a5a8a"/>
+                                    <stop offset="100%" stop-color="#2d1f35"/>
+                                </radialGradient>
+                                <pattern id="hoStars" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+                                    <circle cx="3"  cy="3"  r="0.8" fill="rgba(255,220,160,0.45)"/>
+                                    <circle cx="18" cy="11" r="0.5" fill="rgba(255,220,160,0.3)"/>
+                                    <circle cx="26" cy="23" r="1"   fill="rgba(255,220,160,0.5)"/>
+                                    <circle cx="9"  cy="26" r="0.6" fill="rgba(255,220,160,0.3)"/>
+                                </pattern>
+                            </defs>
+                            <rect width="120" height="180" rx="12" fill="url(#hoBg)"/>
+                            <rect width="120" height="180" rx="12" fill="url(#hoStars)"/>
+                            <rect x="8" y="8" width="104" height="164" rx="8" fill="none" stroke="rgba(255,220,160,0.22)" stroke-width="1.2"/>
+                            <text x="60" y="82"  text-anchor="middle" font-size="36" fill="rgba(255,220,160,0.9)">🔮</text>
+                            <text x="60" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="8" fill="rgba(255,220,160,0.65)" letter-spacing="2.5">AURA33</text>
+                            <text x="60" y="122" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="rgba(255,220,160,0.4)"  letter-spacing="2">✦ ORÁCULO ✦</text>
                         </svg>
-                    </div>
-                    <div class="hero-oracle-card hoc-2">
-                        <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg">
-                            <defs><radialGradient id="hg2" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#6b21a8"/></radialGradient></defs>
-                            <rect width="80" height="120" rx="8" fill="url(#hg2)"/>
-                            <rect x="5" y="5" width="70" height="110" rx="5" fill="none" stroke="rgba(255,220,180,0.3)" stroke-width="1"/>
-                            <text x="40" y="58" text-anchor="middle" font-size="26">💜</text>
-                            <text x="40" y="80" text-anchor="middle" font-family="Georgia" font-size="6" fill="rgba(255,220,180,0.7)" letter-spacing="2">AURA33</text>
-                        </svg>
-                    </div>
-                    <div class="hero-oracle-card hoc-3">
-                        <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg">
-                            <defs><radialGradient id="hg3" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#92400e"/></radialGradient></defs>
-                            <rect width="80" height="120" rx="8" fill="url(#hg3)"/>
-                            <rect x="5" y="5" width="70" height="110" rx="5" fill="none" stroke="rgba(255,220,180,0.4)" stroke-width="1"/>
-                            <text x="40" y="58" text-anchor="middle" font-size="26">✨</text>
-                            <text x="40" y="80" text-anchor="middle" font-family="Georgia" font-size="6" fill="rgba(255,255,255,0.8)" letter-spacing="2">AURA33</text>
-                        </svg>
+                        <div class="hero-oracle-card-hint">Tocá para sacar tu carta</div>
                     </div>
                 </div>
-                <div class="hero-oracle-text">
-                    <span class="hero-oracle-label">Oráculo de cristales</span>
-                    <span class="hero-oracle-sub">Contanos cómo te sentís → te recomendamos tu botella ✦</span>
+
+                {{-- Shuffling --}}
+                <div class="hero-oracle-shuffling" id="heroOracleShuffling" style="display:none;">
+                    <div class="hero-oshuffle">
+                        <div class="hero-oshuffle-c c3"></div>
+                        <div class="hero-oshuffle-c c2"></div>
+                        <div class="hero-oshuffle-c c1"></div>
+                    </div>
+                    <p class="hero-oracle-embed-sublabel">El universo elige...</p>
                 </div>
-            </a>
+
+                {{-- Resultado --}}
+                <div class="hero-oracle-result" id="heroOracleResult" style="display:none;">
+                    <div class="hero-oracle-result-card">
+                        <span class="hero-oracle-result-symbol" id="heroOracleSymbol"></span>
+                        <span class="hero-oracle-result-keyword" id="heroOracleKeyword"></span>
+                        <p class="hero-oracle-result-msg" id="heroOracleMsg"></p>
+                    </div>
+                    <button class="hero-oracle-again" onclick="heroResetOracle()">Sacar otra carta</button>
+                </div>
+            </div>
         </div>
 
         <div class="hero-visual">
@@ -405,64 +420,98 @@ if (!$lunarProduct) {
 
 @push('styles')
 <style>
-/* ── Hero Oracle CTA ──────────────────────────── */
-.hero-oracle-cta {
-    display: flex;
-    align-items: center;
-    gap: 18px;
+/* ── Hero Oráculo Embebido ─────────────────────── */
+.hero-oracle-embed {
     margin-top: 28px;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, rgba(107,79,122,0.07), rgba(147,51,234,0.05));
+    padding: 20px 22px;
+    background: linear-gradient(135deg, rgba(107,79,122,0.07), rgba(147,51,234,0.04));
     border: 1px solid rgba(107,79,122,0.15);
-    border-radius: 16px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    max-width: 420px;
+    border-radius: 18px;
+    max-width: 380px;
 }
-.hero-oracle-cta:hover {
-    background: linear-gradient(135deg, rgba(107,79,122,0.13), rgba(147,51,234,0.09));
-    border-color: rgba(107,79,122,0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(107,79,122,0.12);
-}
-.hero-oracle-cards {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    position: relative;
-    width: 90px;
-    height: 64px;
-}
-.hero-oracle-card {
-    position: absolute;
-    width: 40px;
-    border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;
-    overflow: hidden;
-}
-.hoc-1 { left: 0px;  top: 4px;  transform: rotate(-12deg); z-index: 1; }
-.hoc-2 { left: 22px; top: 0px;  transform: rotate(0deg);   z-index: 2; }
-.hoc-3 { left: 44px; top: 4px;  transform: rotate(10deg);  z-index: 1; }
-.hero-oracle-cta:hover .hoc-1 { transform: rotate(-18deg) translateX(-3px); }
-.hero-oracle-cta:hover .hoc-3 { transform: rotate(16deg)  translateX(3px); }
-.hero-oracle-text {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-.hero-oracle-label {
+.hero-oracle-embed-label {
     font-family: var(--font-serif);
     font-size: 1rem;
     color: var(--brand);
-    font-weight: 500;
+    margin: 0 0 16px;
+    font-style: italic;
 }
-.hero-oracle-sub {
-    font-size: 0.78rem;
+.hero-oracle-embed-sublabel {
+    font-size: 0.82rem;
     color: var(--muted);
-    line-height: 1.4;
+    margin: 12px 0 0;
+    text-align: center;
 }
+.hero-oracle-idle { display: flex; align-items: center; gap: 20px; }
+.hero-oracle-card-wrap {
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 80px;
+    transition: transform 0.25s ease;
+    filter: drop-shadow(0 6px 16px rgba(45,31,53,0.35));
+}
+.hero-oracle-card-wrap:hover { transform: translateY(-4px) rotate(-2deg); }
+.hero-oracle-cardsvg { display: block; width: 100%; border-radius: 10px; }
+.hero-oracle-card-hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 6px;
+    opacity: 0.7;
+}
+/* Shuffling */
+.hero-oshuffle {
+    position: relative;
+    width: 80px;
+    height: 112px;
+    margin: 0 auto;
+}
+.hero-oshuffle-c {
+    position: absolute;
+    width: 60px;
+    height: 90px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #7a5a8a, #2d1f35);
+    border: 1px solid rgba(255,220,160,0.2);
+}
+.hero-oshuffle-c.c1 { top:0; left:10px; animation: hoShuffle 0.7s ease-in-out infinite alternate; }
+.hero-oshuffle-c.c2 { top:6px; left:5px; animation: hoShuffle 0.7s 0.1s ease-in-out infinite alternate-reverse; opacity:0.75; }
+.hero-oshuffle-c.c3 { top:12px; left:0; animation: hoShuffle 0.7s 0.2s ease-in-out infinite alternate; opacity:0.5; }
+@keyframes hoShuffle { from { transform: rotate(-6deg); } to { transform: rotate(6deg) translateX(8px); } }
+/* Result */
+.hero-oracle-result-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+.hero-oracle-result-symbol { font-size: 2rem; line-height: 1; }
+.hero-oracle-result-keyword {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--brand);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+.hero-oracle-result-msg {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.55;
+    margin: 4px 0 12px;
+    font-style: italic;
+}
+.hero-oracle-again {
+    background: none;
+    border: 1px solid rgba(107,79,122,0.3);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    color: var(--brand);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: all 0.2s;
+}
+.hero-oracle-again:hover { background: rgba(107,79,122,0.08); }
 
 /* ── Hero ─────────────────────────────────────── */
 .hero {
@@ -1474,5 +1523,32 @@ function resetOracle() {
 document.getElementById('oracle-input').addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') askOracle();
 });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+let heroLastCard = -1;
+function heroDrawCard() {
+    let idx;
+    do { idx = Math.floor(Math.random() * ORACLE_CARDS.length); } while (idx === heroLastCard);
+    heroLastCard = idx;
+    const card = ORACLE_CARDS[idx];
+    document.getElementById('heroOracleIdle').style.display      = 'none';
+    document.getElementById('heroOracleResult').style.display    = 'none';
+    document.getElementById('heroOracleShuffling').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('heroOracleSymbol').textContent  = card.symbol;
+        document.getElementById('heroOracleKeyword').textContent = card.keyword;
+        document.getElementById('heroOracleMsg').textContent     = card.message;
+        document.getElementById('heroOracleShuffling').style.display = 'none';
+        document.getElementById('heroOracleResult').style.display    = 'block';
+    }, 1600);
+}
+function heroResetOracle() {
+    document.getElementById('heroOracleResult').style.display    = 'none';
+    document.getElementById('heroOracleShuffling').style.display = 'none';
+    document.getElementById('heroOracleIdle').style.display      = 'flex';
+}
 </script>
 @endpush
