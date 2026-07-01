@@ -34,91 +34,98 @@
 
     </div>
 
-    {{-- ── Oráculo franja ──────────────────────────────── --}}
-    <div class="hero-oracle-strip">
-        <div class="ho-strip-deco" aria-hidden="true">
-            <span class="ho-deco-line"></span>
-            <span class="ho-deco-text">✦ &nbsp; Un mensajito del oráculo &nbsp; ✦</span>
-            <span class="ho-deco-line"></span>
+</header>
+
+{{-- ── ORÁCULO DOS COLUMNAS ──────────────────────────────── --}}
+<section class="oracle-section" id="oraculo">
+    <div class="oracle-bg-deco"></div>
+    <div class="container">
+
+        {{-- Título centrado --}}
+        <div class="oracle-dual-header">
+            <span class="oracle-glow-icon">🔮</span>
+            <h2 class="oracle-title">Tu rincón del oráculo</h2>
+            <p class="oracle-desc">Dos caminos hacia tu cristal. Elegí el que resuene con vos.</p>
         </div>
 
-        <div class="ho-strip-body">
+        <div class="oracle-dual-grid">
 
-            {{-- Idle --}}
-            <div class="hero-oracle-idle" id="heroOracleIdle">
-                <div class="hero-oracle-sparkles" aria-hidden="true">
-                    <span class="ho-spark">✦</span>
-                    <span class="ho-spark">·</span>
-                    <span class="ho-spark">✧</span>
-                    <span class="ho-spark">✦</span>
-                    <span class="ho-spark">·</span>
-                    <span class="ho-spark">✧</span>
-                </div>
-                <div class="hero-oracle-card-wrap" onclick="heroDrawCard()" title="Sacar mi carta">
-                    <svg viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg" class="hero-oracle-cardsvg">
-                        <defs>
-                            <radialGradient id="hoBg" cx="50%" cy="40%" r="65%">
-                                <stop offset="0%" stop-color="#7a5a8a"/>
-                                <stop offset="100%" stop-color="#2d1f35"/>
-                            </radialGradient>
-                            <pattern id="hoStars" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-                                <circle cx="3"  cy="3"  r="0.8" fill="rgba(255,220,160,0.45)"/>
-                                <circle cx="18" cy="11" r="0.5" fill="rgba(255,220,160,0.3)"/>
-                                <circle cx="26" cy="23" r="1"   fill="rgba(255,220,160,0.5)"/>
-                                <circle cx="9"  cy="26" r="0.6" fill="rgba(255,220,160,0.3)"/>
-                            </pattern>
-                        </defs>
-                        <rect width="120" height="180" rx="12" fill="url(#hoBg)"/>
-                        <rect width="120" height="180" rx="12" fill="url(#hoStars)"/>
-                        <rect x="8" y="8" width="104" height="164" rx="8" fill="none" stroke="rgba(255,220,160,0.22)" stroke-width="1.2"/>
-                        <text x="60" y="82"  text-anchor="middle" font-size="36" fill="rgba(255,220,160,0.9)">🔮</text>
-                        <text x="60" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="8" fill="rgba(255,220,160,0.65)" letter-spacing="2.5">AURA33</text>
-                        <text x="60" y="122" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="rgba(255,220,160,0.4)" letter-spacing="2">✦ ORÁCULO ✦</text>
-                    </svg>
-                    <div class="hero-oracle-card-hint">Tocá para sacar tu carta</div>
-                </div>
-            </div>
+            {{-- ── COLUMNA IZQUIERDA: carta ── --}}
+            <div class="oracle-dual-col oracle-dual-col--card">
+                <div class="oracle-dual-col-label">✦ Mensajito del oráculo</div>
+                <p class="oracle-dual-col-desc">Dejá que el universo elija una carta con un mensaje para este momento.</p>
 
-            {{-- Shuffling --}}
-            <div class="hero-oracle-shuffling" id="heroOracleShuffling" style="display:none;">
-                <div class="hero-oshuffle">
-                    <div class="hero-oshuffle-c c3"></div>
-                    <div class="hero-oshuffle-c c2"></div>
-                    <div class="hero-oshuffle-c c1"></div>
-                </div>
-                <p class="hero-oracle-embed-sublabel">El universo elige...</p>
-            </div>
+                <div class="ho-strip-body">
+                    {{-- Idle --}}
+                    <div class="hero-oracle-idle" id="heroOracleIdle">
+                        <div class="hero-oracle-sparkles" aria-hidden="true">
+                            <span class="ho-spark">✦</span>
+                            <span class="ho-spark">·</span>
+                            <span class="ho-spark">✧</span>
+                            <span class="ho-spark">✦</span>
+                            <span class="ho-spark">·</span>
+                            <span class="ho-spark">✧</span>
+                        </div>
+                        <div class="hero-oracle-card-wrap" onclick="heroDrawCard()" title="Sacar mi carta">
+                            <svg viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg" class="hero-oracle-cardsvg">
+                                <defs>
+                                    <radialGradient id="hoBg" cx="50%" cy="40%" r="65%">
+                                        <stop offset="0%" stop-color="#7a5a8a"/>
+                                        <stop offset="100%" stop-color="#2d1f35"/>
+                                    </radialGradient>
+                                    <pattern id="hoStars" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+                                        <circle cx="3"  cy="3"  r="0.8" fill="rgba(255,220,160,0.45)"/>
+                                        <circle cx="18" cy="11" r="0.5" fill="rgba(255,220,160,0.3)"/>
+                                        <circle cx="26" cy="23" r="1"   fill="rgba(255,220,160,0.5)"/>
+                                        <circle cx="9"  cy="26" r="0.6" fill="rgba(255,220,160,0.3)"/>
+                                    </pattern>
+                                </defs>
+                                <rect width="120" height="180" rx="12" fill="url(#hoBg)"/>
+                                <rect width="120" height="180" rx="12" fill="url(#hoStars)"/>
+                                <rect x="8" y="8" width="104" height="164" rx="8" fill="none" stroke="rgba(255,220,160,0.22)" stroke-width="1.2"/>
+                                <text x="60" y="82"  text-anchor="middle" font-size="36" fill="rgba(255,220,160,0.9)">🔮</text>
+                                <text x="60" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="8" fill="rgba(255,220,160,0.65)" letter-spacing="2.5">AURA33</text>
+                                <text x="60" y="122" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="rgba(255,220,160,0.4)" letter-spacing="2">✦ ORÁCULO ✦</text>
+                            </svg>
+                            <div class="hero-oracle-card-hint">Tocá para sacar tu carta</div>
+                        </div>
+                    </div>
 
-            {{-- Resultado --}}
-            <div class="hero-oracle-result" id="heroOracleResult" style="display:none;">
-                <div class="hero-oracle-result-card">
-                    <span class="hero-oracle-result-symbol" id="heroOracleSymbol"></span>
-                    <div class="hero-oracle-result-text">
-                        <span class="hero-oracle-result-keyword" id="heroOracleKeyword"></span>
-                        <p class="hero-oracle-result-msg" id="heroOracleMsg"></p>
-                        <button class="hero-oracle-again" onclick="heroResetOracle()">Sacar otra carta ✦</button>
+                    {{-- Shuffling --}}
+                    <div class="hero-oracle-shuffling" id="heroOracleShuffling" style="display:none;">
+                        <div class="hero-oshuffle">
+                            <div class="hero-oshuffle-c c3"></div>
+                            <div class="hero-oshuffle-c c2"></div>
+                            <div class="hero-oshuffle-c c1"></div>
+                        </div>
+                        <p class="hero-oracle-embed-sublabel">El universo elige...</p>
+                    </div>
+
+                    {{-- Resultado --}}
+                    <div class="hero-oracle-result" id="heroOracleResult" style="display:none;">
+                        <div class="hero-oracle-result-card">
+                            <span class="hero-oracle-result-symbol" id="heroOracleSymbol"></span>
+                            <div class="hero-oracle-result-text">
+                                <span class="hero-oracle-result-keyword" id="heroOracleKeyword"></span>
+                                <p class="hero-oracle-result-msg" id="heroOracleMsg"></p>
+                                <button class="hero-oracle-again" onclick="heroResetOracle()">Sacar otra carta ✦</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-        </div>
-    </div>
-
-</header>
-
-{{-- ── ORÁCULO ───────────────────────────────────────────── --}}
-<section class="oracle-section" id="oraculo">
-    <div class="oracle-bg-deco"></div>
-    <div class="container">
-        <div class="oracle-center">
-
-            <div class="oracle-header-area">
-                <span class="oracle-glow-icon">🔮</span>
-                <h2 class="oracle-title">¿Qué cristal necesitás hoy?</h2>
-                <p class="oracle-desc">
-                    Contame cómo te sentís y nuestro oráculo encuentra la botella perfecta para este momento de tu vida.
-                </p>
+            {{-- Divisor vertical --}}
+            <div class="oracle-dual-divider" aria-hidden="true">
+                <span class="oracle-dual-divider-line"></span>
+                <span class="oracle-dual-divider-gem">✦</span>
+                <span class="oracle-dual-divider-line"></span>
             </div>
+
+            {{-- ── COLUMNA DERECHA: finder ── --}}
+            <div class="oracle-dual-col oracle-dual-col--finder">
+                <div class="oracle-dual-col-label">✦ Encontrá tu cristal</div>
+                <p class="oracle-dual-col-desc">Contame cómo te sentís y el oráculo encuentra la botella perfecta para vos.</p>
 
             {{-- Formulario --}}
             <div id="oracle-form-area" class="oracle-form-area">
@@ -213,7 +220,8 @@
                 <button onclick="resetOracle()" class="oracle-retry-btn">Consultar de nuevo</button>
             </div>
 
-        </div>
+            </div>{{-- fin oracle-dual-col--finder --}}
+        </div>{{-- fin oracle-dual-grid --}}
     </div>
 </section>
 
@@ -439,37 +447,64 @@ if (!$lunarProduct) {
 
 @push('styles')
 <style>
-/* ── Hero Oráculo Franja ─────────────────────────── */
-.hero-oracle-strip {
-    width: 100%;
-    padding: 36px 0 44px;
-    border-top: 1px solid rgba(107,79,122,0.1);
-    background: linear-gradient(to bottom, rgba(107,79,122,0.04), transparent);
+/* ── Oracle dual-columnas ────────────────────────── */
+.oracle-dual-header {
+    text-align: center;
+    margin-bottom: 48px;
 }
-/* Cabecera decorativa con líneas */
-.ho-strip-deco {
+.oracle-dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 0 40px;
+    align-items: start;
+}
+@media(max-width: 820px) {
+    .oracle-dual-grid { grid-template-columns: 1fr; gap: 48px 0; }
+    .oracle-dual-divider { display: none; }
+}
+.oracle-dual-col {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 16px;
-    justify-content: center;
-    margin-bottom: 32px;
+    padding: 0 12px;
 }
-.ho-deco-line {
-    flex: 1;
-    max-width: 160px;
-    height: 1px;
-    background: linear-gradient(to right, transparent, rgba(147,51,234,0.3), transparent);
-}
-.ho-deco-text {
+.oracle-dual-col-label {
     font-family: var(--font-serif);
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: var(--brand);
-    letter-spacing: 0.08em;
     font-style: italic;
-    white-space: nowrap;
-    opacity: 0.75;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+    opacity: 0.85;
 }
-/* Cuerpo centrado */
+.oracle-dual-col-desc {
+    font-size: 0.83rem;
+    color: var(--muted);
+    text-align: center;
+    margin: 0 0 28px;
+    line-height: 1.6;
+    max-width: 300px;
+}
+.oracle-dual-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 0;
+    align-self: stretch;
+    justify-content: center;
+}
+.oracle-dual-divider-line {
+    flex: 1;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(147,51,234,0.2), transparent);
+    max-height: 120px;
+}
+.oracle-dual-divider-gem {
+    font-size: 0.9rem;
+    color: rgba(147,51,234,0.35);
+}
+/* Cuerpo centrado carta */
 .ho-strip-body {
     display: flex;
     justify-content: center;
