@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\Facades\Storage;
 
 class ViewWholesalerConsignment extends Page
 {
@@ -51,6 +52,31 @@ class ViewWholesalerConsignment extends Page
             'quedan'       => max(0, $entregadas - $vendidas),
             'total_pagado' => $totalPagado,
         ];
+    }
+
+    public function editPayment(int $id): void
+    {
+        $payment = WholesalePayment::findOrFail($id);
+        $this->mountAction('editar_pago', ['payment_id' => $id]);
+    }
+
+    public function deletePayment(int $id): void
+    {
+        $payment = WholesalePayment::findOrFail($id);
+        $payment->delete();
+        Notification::make()->title('Pago eliminado')->success()->send();
+    }
+
+    public function editDelivery(int $id): void
+    {
+        $this->mountAction('editar_entrega', ['delivery_id' => $id]);
+    }
+
+    public function deleteDelivery(int $id): void
+    {
+        $delivery = WholesaleDelivery::findOrFail($id);
+        $delivery->delete();
+        Notification::make()->title('Entrega eliminada')->success()->send();
     }
 
     protected function getHeaderActions(): array
@@ -133,6 +159,96 @@ class ViewWholesalerConsignment extends Page
                 ->label('← Todos los mayoristas')
                 ->color('gray')
                 ->url(WholesalerConsignmentResource::getUrl('index')),
+
+            Action::make('editar_pago')
+                ->label('Editar pago')
+                ->hidden()
+                ->fillForm(function (array $arguments): array {
+                    $p = WholesalePayment::find($arguments['payment_id'] ?? 0);
+                    if (! $p) return [];
+                    return [
+                        'date'         => $p->date,
+                        'product_name' => $p->product_name,
+                        'quantity'     => $p->quantity,
+                        'amount'       => $p->amount,
+                        'receipt'      => $p->receipt,
+                    ];
+                })
+                ->form([
+                    Forms\Components\DatePicker::make('date')
+                        ->label('Fecha del pago')
+                        ->required()
+                        ->displayFormat('d/m/Y'),
+                    Forms\Components\TextInput::make('product_name')
+                        ->label('Producto')
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('quantity')
+                        ->label('Cantidad vendida')
+                        ->numeric()
+                        ->minValue(1)
+                        ->required(),
+                    Forms\Components\TextInput::make('amount')
+                        ->label('Importe total ($)')
+                        ->numeric()
+                        ->prefix('$')
+                        ->required(),
+                    Forms\Components\FileUpload::make('receipt')
+                        ->label('Comprobante')
+                        ->disk('public')
+                        ->directory('wholesale-payment-receipts')
+                        ->image()
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']),
+                ])
+                ->action(function (array $data, array $arguments) {
+                    $p = WholesalePayment::find($arguments['payment_id'] ?? 0);
+                    if (! $p) return;
+                    $p->update([
+                        'date'         => $data['date'],
+                        'product_name' => $data['product_name'],
+                        'quantity'     => $data['quantity'],
+                        'amount'       => $data['amount'],
+                        'receipt'      => $data['receipt'] ?? $p->receipt,
+                    ]);
+                    Notification::make()->title('Pago actualizado')->success()->send();
+                }),
+
+            Action::make('editar_entrega')
+                ->label('Editar entrega')
+                ->hidden()
+                ->fillForm(function (array $arguments): array {
+                    $d = WholesaleDelivery::find($arguments['delivery_id'] ?? 0);
+                    if (! $d) return [];
+                    return [
+                        'date'     => $d->date,
+                        'quantity' => $d->quantity,
+                        'notes'    => $d->notes,
+                    ];
+                })
+                ->form([
+                    Forms\Components\DatePicker::make('date')
+                        ->label('Fecha de entrega')
+                        ->required()
+                        ->displayFormat('d/m/Y'),
+                    Forms\Components\TextInput::make('quantity')
+                        ->label('Cantidad de botellas')
+                        ->numeric()
+                        ->minValue(1)
+                        ->required(),
+                    Forms\Components\Textarea::make('notes')
+                        ->label('Detalle (opcional)')
+                        ->rows(3),
+                ])
+                ->action(function (array $data, array $arguments) {
+                    $d = WholesaleDelivery::find($arguments['delivery_id'] ?? 0);
+                    if (! $d) return;
+                    $d->update([
+                        'date'     => $data['date'],
+                        'quantity' => $data['quantity'],
+                        'notes'    => $data['notes'] ?? null,
+                    ]);
+                    Notification::make()->title('Entrega actualizada')->success()->send();
+                }),
         ];
     }
 }

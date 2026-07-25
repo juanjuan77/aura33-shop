@@ -94,6 +94,18 @@
 .dark .wc-receipt-btn { background: rgb(var(--color-primary-900) / 0.3); color: rgb(var(--color-primary-300)); border-color: rgb(var(--color-primary-700)); }
 .wc-receipt-btn:hover { opacity: 0.85; }
 .wc-empty { color: rgb(var(--color-gray-400)); font-size:0.85rem; padding:20px 0; }
+.wc-action-btn {
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:0.7rem; font-weight:600; padding:3px 10px;
+    border-radius:50px; border:1px solid; cursor:pointer; text-decoration:none;
+    transition: opacity .15s;
+}
+.wc-action-btn:hover { opacity:.75; }
+.wc-btn-edit   { background:rgb(var(--color-primary-50)); color:rgb(var(--color-primary-700)); border-color:rgb(var(--color-primary-200)); }
+.wc-btn-delete { background:rgb(var(--color-danger-50));  color:rgb(var(--color-danger-600));  border-color:rgb(var(--color-danger-200)); }
+.dark .wc-btn-edit   { background:rgb(var(--color-primary-900)/.3); color:rgb(var(--color-primary-300)); border-color:rgb(var(--color-primary-700)); }
+.dark .wc-btn-delete { background:rgb(var(--color-danger-900)/.3);  color:rgb(var(--color-danger-400));  border-color:rgb(var(--color-danger-700)); }
+.wc-actions { display:flex; gap:6px; flex-wrap:wrap; }
 </style>
 
 @php
@@ -141,6 +153,7 @@
             <th>Fecha</th>
             <th>Botellas</th>
             <th>Detalle</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -149,6 +162,19 @@
             <td>{{ ($d->date ?? $d->created_at)->format('d/m/Y') }}</td>
             <td><strong>{{ $d->quantity }}</strong></td>
             <td class="wc-empty" style="padding:12px 14px; font-size:0.83rem;">{{ $d->notes ?: '—' }}</td>
+            <td>
+                <div class="wc-actions">
+                    <button class="wc-action-btn wc-btn-edit"
+                        wire:click="mountAction('editar_entrega', { delivery_id: {{ $d->id }} })">
+                        ✏️ Editar
+                    </button>
+                    <button class="wc-action-btn wc-btn-delete"
+                        wire:click="deleteDelivery({{ $d->id }})"
+                        onclick="return confirm('¿Eliminar esta entrega?')">
+                        🗑 Eliminar
+                    </button>
+                </div>
+            </td>
         </tr>
         @endforeach
     </tbody>
@@ -168,6 +194,7 @@
             <th>Cant. vendida</th>
             <th>Importe</th>
             <th>Comprobante</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -183,6 +210,19 @@
                 @else
                     <span class="wc-empty">—</span>
                 @endif
+            </td>
+            <td>
+                <div class="wc-actions">
+                    <button class="wc-action-btn wc-btn-edit"
+                        wire:click="mountAction('editar_pago', { payment_id: {{ $p->id }} })">
+                        ✏️ Editar
+                    </button>
+                    <button class="wc-action-btn wc-btn-delete"
+                        wire:click="deletePayment({{ $p->id }})"
+                        onclick="return confirm('¿Eliminar este pago?')">
+                        🗑 Eliminar
+                    </button>
+                </div>
             </td>
         </tr>
         @endforeach
