@@ -24,7 +24,12 @@ class MercadoPagoService
                     'quantity'    => (int) $item->quantity,
                     'unit_price'  => (float) $item->unit_price,
                     'currency_id' => 'ARS',
-                ])->toArray(),
+                ])->when($order->mp_surcharge > 0, fn($col) => $col->push([
+                    'title'       => 'Recargo MercadoPago (5%)',
+                    'quantity'    => 1,
+                    'unit_price'  => (float) $order->mp_surcharge,
+                    'currency_id' => 'ARS',
+                ]))->toArray(),
                 'payer' => [
                     'name'  => $order->customer_name,
                     'email' => $order->customer_email,
