@@ -368,7 +368,7 @@ class CartController extends Controller
     {
         return [
             'banco'   => 'BBVA',
-            'titular' => 'AURA33',
+            'titular' => 'Joana Canziani',
             'cbu'     => '',
             'alias'   => 'joajustina',
         ];
