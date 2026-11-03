@@ -120,6 +120,7 @@
                         {{-- Info transferencia --}}
                         <div id="transfer-info" style="margin-top:16px; background:rgba(74,59,82,0.03); border:1px solid rgba(74,59,82,0.10); border-radius:8px; padding:16px 18px;">
                             @foreach([['Banco', $bankData['banco']], ['Titular', $bankData['titular']], ['CBU', $bankData['cbu']], ['Alias', $bankData['alias']]] as [$l, $v])
+                            @if(!$v) @continue @endif
                             <div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(74,59,82,0.06); font-size:0.84rem;">
                                 <span style="color:var(--muted);">{{ $l }}</span>
                                 <strong style="color:var(--brand);">{{ $v }}</strong>

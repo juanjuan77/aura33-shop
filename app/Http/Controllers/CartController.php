@@ -367,10 +367,10 @@ class CartController extends Controller
     private function bankData(): array
     {
         return [
-            'banco'   => 'Banco Galicia',
+            'banco'   => 'BBVA',
             'titular' => 'AURA33',
-            'cbu'     => '0070999520000004567890',
-            'alias'   => 'AURA33.CRISTALES',
+            'cbu'     => '',
+            'alias'   => 'joajustina',
         ];
     }
 }

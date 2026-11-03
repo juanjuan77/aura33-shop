@@ -134,6 +134,7 @@
                 <div style="background:rgba(123,94,167,0.07); border:1px solid rgba(123,94,167,0.18); border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; text-align:left;">
                     <h3 style="font-size:0.78rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem;">🏦 Alternativa: Transferencia</h3>
                     @foreach([['Banco', $bankData['banco']], ['Titular', $bankData['titular']], ['CBU', $bankData['cbu']], ['Alias', $bankData['alias']]] as [$label, $val])
+                    @if(!$val) @continue @endif
                     <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid rgba(123,94,167,0.08); font-size:0.86rem;">
                         <span style="color:var(--muted)">{{ $label }}</span>
                         <strong style="color:var(--text)">{{ $val }}</strong>
@@ -156,6 +157,7 @@
                     <h3 style="font-size:0.78rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:1.2rem;">💳 Realizá la Transferencia</h3>
 
                     @foreach([['Banco', $bankData['banco']], ['Titular', $bankData['titular']], ['CBU', $bankData['cbu']], ['Alias', $bankData['alias']]] as [$label, $val])
+                    @if(!$val) @continue @endif
                     <div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid rgba(123,94,167,0.08); font-size:0.86rem;">
                         <span style="color:var(--muted)">{{ $label }}</span>
                         <strong style="color:var(--text)">{{ $val }}</strong>
