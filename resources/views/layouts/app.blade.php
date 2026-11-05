@@ -6,6 +6,7 @@
     <title>@yield('title', 'AURA33 | Cristales & Energía')</title>
     <meta name="description" content="@yield('description', 'Botellas de cristal, torres energéticas y oráculos. Conectá con la vibración de los cristales naturales.')">
     <meta name="robots" content="index, follow">
+    <meta name="google-site-verification" content="gbYKcsqDiSthyDD3OHg5C2LJJ3HNo6ZX7w-FHN_4Ucc">
     <link rel="canonical" href="{{ url()->current() }}">
 
     {{-- Open Graph --}}
