@@ -6,7 +6,12 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\StockAlertController;
 use App\Http\Controllers\ConsignmentExportController;
 use App\Http\Controllers\WholesaleController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
+
+// SEO
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Tienda
 Route::get('/', [ShopController::class, 'home'])->name('home');

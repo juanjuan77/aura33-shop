@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'AURA33 | Cristales & Energía')</title>
     <meta name="description" content="@yield('description', 'Botellas de cristal, torres energéticas y oráculos. Conectá con la vibración de los cristales naturales.')">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    {{-- Open Graph --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="AURA33">
+    <meta property="og:title" content="@yield('title', 'AURA33 | Cristales & Energía')">
+    <meta property="og:description" content="@yield('description', 'Botellas de cristal, torres energéticas y oráculos. Conectá con la vibración de los cristales naturales.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-aura33.jpg'))">
+    <meta property="og:locale" content="es_AR">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'AURA33 | Cristales & Energía')">
+    <meta name="twitter:description" content="@yield('description', 'Botellas de cristal, torres energéticas y oráculos.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-aura33.jpg'))">>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

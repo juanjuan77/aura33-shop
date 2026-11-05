@@ -1,5 +1,6 @@
 @extends('layouts.app')
-@section('title', 'AURA33 | Cristales & Energía')
+@section('title', 'AURA33 | Botellas de Cristal y Energía — Funes, Santa Fe')
+@section('description', 'Botellas de cristal natural, torres energéticas y oráculos. Amatista, cuarzo rosa, lapislázuli y más. Envíos a todo Argentina desde Funes, Santa Fe.')
 
 @push('preload')
 <link rel="preload" href="{{ asset('img/cuarzorosa.jpg') }}" as="image">

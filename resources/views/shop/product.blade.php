@@ -1,6 +1,7 @@
 @extends('layouts.app')
-@section('title', $product->name . ' — AURA33')
-@section('description', $product->short_description)
+@section('title', $product->name . ' | Botella de Cristal — AURA33')
+@section('description', $product->short_description ?: $product->name . '. Botella de cristal natural con envío a todo Argentina. Comprá en AURA33.')
+@section('og_image', $product->image ? asset('storage/' . $product->image) : asset('images/og-aura33.jpg'))
 
 @section('content')
 <div style="padding: 60px 0 100px;">
